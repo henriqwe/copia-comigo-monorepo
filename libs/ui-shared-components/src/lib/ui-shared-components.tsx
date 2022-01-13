@@ -7,7 +7,7 @@ export function UiSharedComponents(props: UiSharedComponentsProps) {
   return (
     <div id="welcome">
       <h1>
-        <span> Hello there, </span>
+        <span className="h-16"> Hello there, </span>
         Welcome primeiro-app | Este é um componente compartilhado
       </h1>
     </div>
