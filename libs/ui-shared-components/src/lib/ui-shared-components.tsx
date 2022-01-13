@@ -5,8 +5,11 @@ export interface UiSharedComponentsProps {}
 
 export function UiSharedComponents(props: UiSharedComponentsProps) {
   return (
-    <div>
-      <h1>Welcome to UiSharedComponents!</h1>
+    <div id="welcome">
+      <h1>
+        <span> Hello there, </span>
+        Welcome primeiro-app | Este é um componente compartilhado
+      </h1>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import styles from './index.module.css';
+import {UiSharedComponents} from "@comigo/ui-shared-components";
 
 export function Index() {
   /*
@@ -10,12 +11,7 @@ export function Index() {
     <div className={styles.page}>
       <div className="wrapper">
         <div className="container">
-          <div id="welcome">
-            <h1>
-              <span> Hello there, </span>
-              Welcome primeiro-app 👋
-            </h1>
-          </div>
+          <UiSharedComponents />
 
           <div id="hero" className="rounded">
             <div className="text-container">
