@@ -2,6 +2,7 @@
   "version": 2,
   "projects": {
     "primeiro-app": "apps/primeiro-app",
+    "segundo-app": "apps/segundo-app",
     "ui-shared-components": "libs/ui-shared-components"
   }
 }
