@@ -8,11 +8,13 @@ module.exports = {
     require('../../tailwind-workspace-preset.js')
   ],
   mode: 'jit',
-  purge: [
-    join(__dirname, 'src/pages/**/*.{js,ts,jsx,tsx}'),
-    ...createGlobPatternsForDependencies(__dirname),
-    './node_modules/@left4code/tw-starter/**/*.js'
-  ],
+  purge: {
+    content: [
+      join(__dirname, 'src/pages/**/*.{js,ts,jsx,tsx}'),
+      // ...createGlobPatternsForDependencies(__dirname),
+      // '~@left4code/tw-starter/**/*.js'
+    ]
+  },
   darkMode: 'class',
   theme: {
     borderColor: (theme) => ({

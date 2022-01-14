@@ -1,17 +1,14 @@
+import {useEffect} from "react";
 import { AppProps } from 'next/app';
-import Head from 'next/head';
+
 import '../../styles/app.scss';
 
 function CustomApp({ Component, pageProps }: AppProps) {
+  useEffect(() => {
+      document.querySelector('body')?.classList.remove('main')
+  })
   return (
-    <>
-      <Head>
-        <title>Welcome to segundo-app!</title>
-      </Head>
-      <main className="app">
-        <Component {...pageProps} />
-      </main>
-    </>
+      <Component {...pageProps} />
   );
 }
 
