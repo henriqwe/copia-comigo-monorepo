@@ -6,7 +6,7 @@ export function Index() {
     // <div className={styles.page}>
     <div className="bg-gray-500">
       <UiSharedComponents />
-      <article className="prose lg:prose-xl">
+      <article className="prose lg:prose-xl p-4">
         <h1 className="text-xl">Garlic bread with cheese: What the science tells us</h1>
         <p>
           For years parents have espoused the health benefits of eating garlic bread with cheese to their

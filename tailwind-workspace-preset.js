@@ -1,5 +1,3 @@
-// tailwind-workspace-preset.js
-
 module.exports = {
   theme: {
     extend: {},
@@ -8,6 +6,7 @@ module.exports = {
     extend: {},
   },
   plugins: [
-    require('@tailwindcss/typography')
-  ],
+    require('@tailwindcss/typography'),
+  ]
+  // plugins: [require('@tailwindcss/typography')],
 };
