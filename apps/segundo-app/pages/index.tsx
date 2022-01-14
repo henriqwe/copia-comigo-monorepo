@@ -3,8 +3,7 @@ import {UiSharedComponents} from "@comigo/ui-shared-components";
 
 export function Index() {
   return (
-    // <div className={styles.page}>
-    <div className="bg-gray-500">
+    <div className={styles.page}>
       <UiSharedComponents />
       <article className="prose lg:prose-xl p-4">
         <h1 className="text-xl">Garlic bread with cheese: What the science tells us</h1>
