@@ -9,7 +9,7 @@ module.exports = {
   ],
   mode: 'jit',
   purge: [
-    join(__dirname, 'pages/**/*.{js,ts,jsx,tsx}'),
+    join(__dirname, 'src/pages/**/*.{js,ts,jsx,tsx}'),
     ...createGlobPatternsForDependencies(__dirname),
     './node_modules/@left4code/tw-starter/**/*.js'
   ],
