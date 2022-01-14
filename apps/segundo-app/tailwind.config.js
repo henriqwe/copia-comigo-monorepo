@@ -1,3 +1,6 @@
+const { createGlobPatternsForDependencies } = require('@nrwl/next/tailwind');
+const { join } = require('path');
+
 const primaryColors = require('@left4code/tw-starter/dist/js/colors')
 
 module.exports = {
@@ -6,7 +9,8 @@ module.exports = {
   ],
   mode: 'jit',
   purge: [
-    './src/**/*.{ts,tsx}',
+    join(__dirname, 'pages/**/*.{js,ts,jsx,tsx}'),
+    ...createGlobPatternsForDependencies(__dirname),
     './node_modules/@left4code/tw-starter/**/*.js'
   ],
   darkMode: 'class',
