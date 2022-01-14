@@ -7,5 +7,14 @@ module.exports = {
       config: join(__dirname, 'tailwind.config.js'),
     },
     autoprefixer: {},
+    'postcss-import': {},
   },
 };
+
+// module.exports = {
+//   plugins: [
+//     require('postcss-import'),
+//     require('tailwindcss'),
+//     require('autoprefixer'),
+//   ]
+// }
