@@ -11,8 +11,8 @@ module.exports = {
   purge: {
     content: [
       join(__dirname, 'src/pages/**/*.{js,ts,jsx,tsx}'),
-      // ...createGlobPatternsForDependencies(__dirname),
-      // '~@left4code/tw-starter/**/*.js'
+      ...createGlobPatternsForDependencies(__dirname),
+      '~@left4code/tw-starter/**/*.js'
     ]
   },
   darkMode: 'class',
