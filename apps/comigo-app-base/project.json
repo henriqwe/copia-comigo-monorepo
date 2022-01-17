@@ -1,0 +1,54 @@
+{
+  "root": "apps/comigo-app-base",
+  "sourceRoot": "apps/comigo-app-base",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/next:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "root": "apps/comigo-app-base",
+        "outputPath": "dist/apps/comigo-app-base"
+      },
+      "configurations": {
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/next:server",
+      "options": {
+        "buildTarget": "comigo-app-base:build",
+        "dev": true
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "comigo-app-base:build:production",
+          "dev": false
+        }
+      }
+    },
+    "export": {
+      "executor": "@nrwl/next:export",
+      "options": {
+        "buildTarget": "comigo-app-base:build:production"
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/comigo-app-base"],
+      "options": {
+        "jestConfig": "apps/comigo-app-base/jest.config.js",
+        "passWithNoTests": true
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/comigo-app-base/**/*.{ts,tsx,js,jsx}"]
+      }
+    }
+  },
+  "tags": []
+}

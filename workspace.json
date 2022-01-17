@@ -1,6 +1,7 @@
 {
   "version": 2,
   "projects": {
+    "comigo-app-base": "apps/comigo-app-base",
     "primeiro-app": "apps/primeiro-app",
     "segundo-app": "apps/segundo-app",
     "ui-shared-components": "libs/ui-shared-components"
