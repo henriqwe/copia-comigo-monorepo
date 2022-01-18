@@ -1,6 +1,6 @@
 import InputMask from 'react-input-mask'
 import { Control, Controller } from 'react-hook-form'
-import * as form from '@/common/Form'
+import {common} from '@comigo/ui-shared-components'
 import {
   DeepMap,
   FieldError,
@@ -38,7 +38,7 @@ function BRPhoneInput({
           onChange={onChange}
           disabled={disabled}
         >
-          <form.Input
+          <common.Form.Input
             fieldName="Telefone"
             title="Telefone"
             error={error}

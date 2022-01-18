@@ -12,14 +12,14 @@ import Switch from './Switch'
 
 export {
   Input,
-  ZipCodeInput,
-  CNPJInput,
-  CPFInput,
-  BRPhoneInput,
-  FormLine,
-  LicensePlateInput,
+  // ZipCodeInput,
+  // CNPJInput,
+  // CPFInput,
+  // BRPhoneInput,
+  // FormLine,
+  // LicensePlateInput,
   Select,
   SelectWithGroup,
-  MultiSelect,
-  Switch
+  // MultiSelect,
+  // Switch
 }

@@ -1,4 +1,4 @@
-import { MainNavigation} from "@comigo/ui-shared-components";
+import { FloatingCard, MainNavigation} from "@comigo/ui-shared-components";
 import { Loader } from '@googlemaps/js-api-loader'
 import { useEffect } from 'react';
 import MainMenuItens from "../../components/domains/MainMenuItens";
@@ -54,8 +54,7 @@ export function Index() {
       <div className="h-screen sticky top-0 z-50">
        <MainNavigation mainMenuItens={MainMenuItens}/>
       </div>
-      
-      <div className="w-full h-screen" id="googleMaps" />
+      <FloatingCard/>
     </div>
   );
 }

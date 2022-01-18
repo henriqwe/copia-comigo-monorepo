@@ -1,6 +1,6 @@
 import { Controller, useForm } from 'react-hook-form'
 import { useState, useEffect } from 'react'
-import {Common} from "@comigo/ui-shared-components";
+import {common} from "@comigo/ui-shared-components";
 import * as localizations from '../../index'
 
 import { yupResolver } from '@hookform/resolvers/yup/dist/yup'
@@ -120,7 +120,7 @@ export default function CreateLocalization() {
           name="Veiculos"
           render={({ field: { onChange, value } }) => (
             <div>
-              <form.Select
+              <common.Form.Select
                 itens={
                   allUserVehicle
                     ? allUserVehicle
@@ -151,7 +151,7 @@ export default function CreateLocalization() {
         />
       </div>
 
-      <Common.Separator />
+      <common.Separator />
       {vehicleConsultData && (
         <div className="w-full mt-4">
           <div className="flex justify-between items-center">

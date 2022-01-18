@@ -26,7 +26,7 @@ export async function getAllUserVehicles(email: string) {
     return data
   } catch (err: any) {
     console.log(err)
-    showError(err)
+    // showError(err)
   }
 }
 

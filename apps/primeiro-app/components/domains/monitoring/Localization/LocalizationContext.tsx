@@ -8,7 +8,7 @@ import {
   useState
 } from 'react'
 import * as yup from 'yup'
-import { getAllUserVehicles } from './api'
+import { getAllUserVehicles } from './api/index'
 
 type vehicle = {
   crs: string

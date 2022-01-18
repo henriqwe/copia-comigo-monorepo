@@ -1,4 +1,4 @@
-import * as localizations from '../index'
+import * as localizations from '../../Localization'
 
 export function Actions() {
   const { setSlidePanelState } = localizations.useLocalization()
