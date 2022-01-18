@@ -2,8 +2,17 @@ import { MainNavigation} from "@comigo/ui-shared-components";
 import { Loader } from '@googlemaps/js-api-loader'
 import { useEffect } from 'react';
 import MainMenuItens from "../components/domains/MainMenuItens";
+import * as localizations from '../components/domains/monitoring/Localization'
 
-export function Index() {
+export default function Localizacao() {
+  return (
+    <localizations.LocalizationProvider>
+      <Page />
+    </localizations.LocalizationProvider>
+  )
+}
+
+export function Page() {
 
   function initMap() {
     const loader = new Loader({
@@ -55,10 +64,13 @@ export function Index() {
       <div className="h-screen sticky top-0 z-50">
        <MainNavigation mainMenuItens={MainMenuItens}/>
       </div>
-      
+      <div className="absolute z-50 h-5/6 right-0 flex items-center">
+        <div className="h-20 w-7">
+          <localizations.InternalNavigation />
+        </div>
+      </div>
       <div className="w-full h-screen" id="googleMaps" />
     </div>
   );
 }
 
-export default Index;

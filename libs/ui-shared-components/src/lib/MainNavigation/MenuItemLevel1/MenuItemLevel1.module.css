@@ -1,34 +1,7 @@
-.test {
-    @apply bg-gray-500 p-4
+.tooltip {
+    @apply invisible absolute;
 }
 
 li .tooltip {
-    color: black;
-    position: absolute;
-    left: 132px;
-    top: 0;
-    transform: translate(-50%, -50%);
-    border-radius: 6px;
-    height: 35px;
-    width: 122px;
-    background-color: #fff;
-    line-height: 35px;
-    text-align: center;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    transition: 0s;
-    opacity: 0;
-    pointer-events: none;
-    display: block;
-}
-
-li .tooltip {
-    display: none;
-}
-
-li:hover .tooltip {
-    transition: all 0.1s ease;
-    opacity: 1;
-    top: 50%;
-    z-index: 9999999999;
-    background-color: #fff;
+    @apply visible z-50;
 }

@@ -1,5 +1,4 @@
 import * as common from "../../common";
-
 import { ReactChild } from 'react'
 
 type ItemNivel3 = {

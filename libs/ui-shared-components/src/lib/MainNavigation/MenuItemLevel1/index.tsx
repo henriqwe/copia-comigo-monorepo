@@ -1,6 +1,6 @@
 import { ChevronDoubleDownIcon} from "@heroicons/react/outline";
-
 import Router from 'next/router'
+import styles from './MenuItemLevel1.module.css'
 import { Dispatch, SetStateAction, useEffect } from 'react'
 
 export type MenuItemType = {
@@ -32,7 +32,7 @@ export default function ItemDoMenu({
     }
   },[openMenu])
   return (
-    <li className="relative text-gray-500  focus-within:text-white">
+    <li className=" relative text-gray-500  focus-within:text-white">
       <div
         className={`side-menu cursor-pointer ${active && 'side-menu--active'} left-0 flex items-center hover:bg-gray-800  hover:text-white py-2 rounded`}
         onClick={() => {
@@ -57,7 +57,11 @@ export default function ItemDoMenu({
             </div>
           )}
         </div>
-        <span className={`hidden ${!openMenu && 'hover:visible'} `}>{title}</span>
+        
+       
+        <span className={`${openMenu && 'invisible'} tooltip absolute rounded shadow-lg p-1 bg-gray-800 text-white ml-16`}>{title}</span>
+      
+     
       </div>
       {children && open && <ul className="side-menu__sub-open side-menu__sub-open flex flex-col pl-1 ml-4 text-gray-500 border-l border-gray-700">{children}</ul>}
     </li>
