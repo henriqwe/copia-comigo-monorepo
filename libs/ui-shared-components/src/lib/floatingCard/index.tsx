@@ -5,7 +5,7 @@ import {common,SeparatorWithTitleAndNumber, CardVehicle} from '@comigo/ui-shared
 import { Controller } from "react-hook-form";
 
 export interface FloatingCardProps {
-  allUserVehicleProps?:{
+  allUserVehicle?:{
     crs: string
     data: string
     dist: string
@@ -31,9 +31,9 @@ export interface FloatingCardProps {
   }[]
 }
 
-export function FloatingCard({allUserVehicleProps}:FloatingCardProps) {
+export function FloatingCard({allUserVehicle}:FloatingCardProps) {
   const [open,setOpen] = useState(true)
-  const allUserVehicle = [{carro_id:'1',placa:'ABC-123'},{carro_id:'2',placa:'EDC-123'},{carro_id:'3',placa:'SAD-123'}]
+  
   const [titleFilter, setTitleFilter] = useState('Em trânsito')
   return (
     <aside className={`flex flex-col w-full ${open?'h-full':'h-10'} bg-white rounded-sm`}>
