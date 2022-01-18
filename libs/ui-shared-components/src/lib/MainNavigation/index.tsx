@@ -28,9 +28,9 @@ export interface MainNavigationProps {
 export function MainNavigation({ mainMenuItens }: MainNavigationProps) {
   const [openMenu,setOpenMenu] = useState(true)
   return (
-      <aside className={`side-nav ${openMenu ?'w-64' :'w-20'} h-full bg-gray-900`}>
+      <aside className={`flex flex-col side-nav ${openMenu ?'w-64' :'w-20'} h-full bg-gray-900`}>
       {/* Logo */}
-        <div className="px-6 pt-8 block">
+        <div className=" px-6 pt-8 block">
           <div className="flex items-center justify-between">
             <a href="#" className="bg-blue-600 p-1.5 rounded dlex items-center justify-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900">
               <svg className="w-5 h-5 text-white stroke-current" viewBox="0 0 24 24" fill="none">
@@ -62,7 +62,7 @@ export function MainNavigation({ mainMenuItens }: MainNavigationProps) {
           <hr className='border-gray-700'/>
         </div>
         {/* items */}
-        <div className='px-6 pt-4'>
+        <div className='px-6 pt-4 flex-1  overflow-y-auto'>
           <ul className='flex flex-col space-y-2'>
               {mainMenuItens.map((item, index) => {
           return item.children?.length === 0 ? (
@@ -82,7 +82,7 @@ export function MainNavigation({ mainMenuItens }: MainNavigationProps) {
           </ul>
         </div>
         {/* User*/}
-        <div className={`pl-6 pr-4 py-4 bg-gray-800 flex items-center justify-between bottom-0 absolute ${openMenu ?'w-64' :'w-20'}`}><div className='flex items-center'>
+        <div className={`pl-6 pr-4 py-4 bg-gray-800 flex items-center justify-between bottom-0 ${openMenu ?'w-64' :'w-20'}`}><div className='flex items-center'>
               <div className="relative w-8 h-8 rounded-full before:absolute before:w-2 before:h-2 before:bg-green-500 before:rounded-full before:rigth-0  before:bottom-0 before:ring-1 before:ring-white">
               <img className='rounded-full' src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8czzbrLzXJ9R_uhKyMiwj1iGxKhJtH7pwlQ&usqp=CAU" alt="user image" />
               </div>

@@ -102,7 +102,7 @@ export function FloatingCard({allUserVehicle}:FloatingCardProps) {
               
             </div>
           </div>
-          <div className="flex-1 px-3 py-2 overflow-hidden overflow-y-scroll">
+          <div className="flex-1 px-3 py-2 overflow-y-scroll">
             <SeparatorWithTitleAndNumber title={'Em trânsito'} number={'32'}/>
               <CardVehicle 
                 placa="ABC121" 
