@@ -60,12 +60,12 @@ export function Page() {
 
 
   return (
-    <div className="flex">
+    <div className="flex max-h-screen">
       <div className="h-screen sticky top-0 z-50">
        <MainNavigation mainMenuItens={MainMenuItens}/>
       </div>
    
-      <div className="absolute z-50 h-full right-0 flex pr-16 pt-2.5 pb-6">
+      <div className="absolute   z-50 right-0 flex mr-16 mt-2.5" style={{ height: "95%"}}>
         <div className="w-72">
           <FloatingCard/>
         </div>
