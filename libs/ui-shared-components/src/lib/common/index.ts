@@ -35,7 +35,7 @@ export {
   // AddForm,
   // Breadcrumb,
   // Header,
-  // Card,
+  Card,
   // EmptyContent,
   // DialogueModal,
   // Divider,

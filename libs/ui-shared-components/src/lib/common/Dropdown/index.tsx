@@ -14,7 +14,7 @@ export default function Dropdown({
   titleClassName?: string
 }) {
   return (
-    <div className="pt-1 pl-4 z-50">
+    <div className="pt-1 pl-4">
       <Menu as="div" className="relative inline-block text-left">
         <div>
           <Menu.Button className='inline-flex items-center justify-center w-full border-b border-gray-200 lg:flex-row dark:border-dark-5'>
