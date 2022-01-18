@@ -1,8 +1,7 @@
 import { MainNavigation} from "@comigo/ui-shared-components";
 import { Loader } from '@googlemaps/js-api-loader'
 import { useEffect } from 'react';
-import MainMenuItens from "../components/domains/MainMenuItens";
-
+import MainMenuItens from "../../components/domains/MainMenuItens";
 export function Index() {
 
   function initMap() {
@@ -37,7 +36,9 @@ export function Index() {
             mapTypeId: google.maps.MapTypeId.ROADMAP
           }
         )
-        map.setOptions({ styles })        
+        map.setOptions({ styles })
+        console.log(map)
+        
       })
       .catch((e) => {
         console.log('error: ', e)
@@ -46,9 +47,7 @@ export function Index() {
 
   useEffect(() => {
     initMap()
-    
   }, [])
-
 
   return (
     <div className="flex">
