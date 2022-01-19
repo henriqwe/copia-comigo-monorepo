@@ -143,7 +143,7 @@ function Select({
                 leaveTo="opacity-0"
               >
                 <Listbox.Options
-                  className={`absolute pb-3 mt-1 overflow-auto text-base bg-white dark:bg-dark-5 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-50 ${optionClassName}`}
+                  className={`absolute  pb-3 mt-1  text-base bg-white dark:bg-dark-5 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-50 ${optionClassName}`}
                   style={{
                     width: optionWidth
                   }}
@@ -161,6 +161,7 @@ function Select({
                       />
                     )}
                   </div>
+                  <div className="max-h-96 overflow-y-auto">
                   {itensFiltred.length > 0 ? (
                     itensFiltred.map((item, personIdx: number) => (
                       <Listbox.Option
@@ -231,6 +232,7 @@ function Select({
                       )}
                     </Listbox.Option>
                   )}
+                  </div>
                 </Listbox.Options>
               </Transition>
             )}

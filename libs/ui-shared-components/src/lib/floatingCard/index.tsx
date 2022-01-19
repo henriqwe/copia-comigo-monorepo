@@ -40,7 +40,7 @@ export function FloatingCard({allUserVehicle}:FloatingCardProps) {
       <div className={`flex bg-gray-900 h-10 w-full p-4 items-center  ${open?'rounded-t-sm':'rounded-sm'}  text-gray-100 justify-between`}>
         <LocationMarkerIcon className="w-5 h-5 text-gray-100 " />
         <span className="text-sm">Veículos em tempo real</span>
-        <span className="text-sm bg-gray-800 px-2 rounded-full">64</span>
+        <span className="text-sm bg-gray-800 px-2 rounded-full">{allUserVehicle?.length}</span>
         <button onClick={()=>{setOpen(!open)}}>
           {open ?
           <MinusIcon className="w-5 h-5 text-gray-100 " />
