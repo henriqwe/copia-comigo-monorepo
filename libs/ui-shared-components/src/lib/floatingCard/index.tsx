@@ -415,7 +415,7 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,co
         </div>
       )}
           </div>
-      </>
+    </>
   )
 }
 

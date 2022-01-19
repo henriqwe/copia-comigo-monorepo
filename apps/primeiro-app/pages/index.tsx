@@ -153,8 +153,17 @@ export function Page() {
   }, [allUserVehicle])
 
   useEffect(() => {
-    if (coordsToCenterMap && google) centerMapInVehicle(coordsToCenterMap, mapa)
-  }, [coordsToCenterMap])
+    if (selectedVehicle && google){
+      centerMapInVehicle({
+        lat:Number(selectedVehicle.latitude),
+        lng:Number(selectedVehicle.longitude),
+        carro_id:selectedVehicle.carro_id}, mapa)
+      return
+    }else if (coordsToCenterMap && google){
+      centerMapInVehicle(coordsToCenterMap, mapa)
+      return
+    }
+  }, [coordsToCenterMap,selectedVehicle])
 
   return (
     <div className="flex max-h-screen">
@@ -162,7 +171,7 @@ export function Page() {
        <MainNavigation mainMenuItens={MainMenuItens}/>
       </div>
    
-      <div className="absolute   z-50 right-0 flex mr-16 mt-2.5" style={{ height: "95%"}}>
+      <div className="absolute z-50 right-0 flex mr-16 mt-2.5" style={{ height: "95%"}}>
         <div className="w-72">
     
           <FloatingCard 
@@ -285,8 +294,9 @@ function centerMapInVehicle(
 ) {
   if (map && coords) {
     map.setCenter(coords)
-    map.setZoom(18)
+    map.setZoom(10)
   }
+  
 
   const circleMarker = new google.maps.Marker({
     map,
