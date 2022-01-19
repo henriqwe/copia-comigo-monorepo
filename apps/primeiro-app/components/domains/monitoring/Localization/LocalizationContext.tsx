@@ -8,7 +8,7 @@ import {
   useState
 } from 'react'
 import * as yup from 'yup'
-import { getAllUserVehicles } from './api/index'
+import { getAllUserVehicles, getVehicleHistoric } from './api/index'
 
 type vehicle = {
   crs: string
@@ -58,6 +58,11 @@ type LocalizationContextProps = {
   centerVehicleInMap?: (carroId: number) => void
   vehicleOnFocusId: number | undefined
   setVehicleOnFocusId: Dispatch<SetStateAction<number | undefined>>
+  consultVehicleHistoric?: (
+    carro_id: string,
+    inicio: string,
+    fim: string
+  ) => void
 }
 
 type ProviderProps = {
@@ -115,6 +120,17 @@ export const LocalizationProvider = ({ children }: ProviderProps) => {
     setLocalizationsLoading(false)
   }
 
+  async function consultVehicleHistoric(
+    carro_id: string,
+    inicio: string,
+    fim: string
+  ) {
+    setLocalizationsLoading(true)
+    const response = await getVehicleHistoric(carro_id, inicio, fim)
+    setVehicleConsultData(response)
+    setLocalizationsLoading(false)
+  }
+
   useEffect(() => {
     updateAllUserVehiclesLocations()
     setInterval(async () => {
@@ -139,7 +155,8 @@ export const LocalizationProvider = ({ children }: ProviderProps) => {
         vehicleConsultData,
         setVehicleConsultData,
         vehicleOnFocusId,
-        setVehicleOnFocusId
+        setVehicleOnFocusId,
+        consultVehicleHistoric
       }}
     >
       {children}

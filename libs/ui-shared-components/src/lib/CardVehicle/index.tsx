@@ -10,9 +10,10 @@ export interface CardVehicleProps {
   addressName: string;
   driverName: string;
   velocity: number ;
+  className?: string
 }
 
-export function CardVehicle({placa,travelTime,statusVehicle, addressName,driverName,velocity}: CardVehicleProps) {
+export function CardVehicle({placa,travelTime,statusVehicle, addressName,driverName,velocity,className}: CardVehicleProps) {
   let statsColor:string
   let velocityColor:string
 
@@ -40,8 +41,8 @@ export function CardVehicle({placa,travelTime,statusVehicle, addressName,driverN
   }
 
   return (
-    <common.Card className="hover:bg-gray-200 bg-gray-100 my-4 p-2 text-gray-600">
-      <div className="grid grid-cols-12">
+    <common.Card  className={`hover:bg-gray-200 bg-gray-100 my-4 p-2 text-gray-600 ${className}`}>
+      <div className="grid grid-cols-12" >
         <div className="col-span-2 flex items-center justify-center">
           {/* <span className={`w-3 h-3 ${statsColor} rounded-full absolute -ml-14`}/> */}
           <TruckIcon className="w-5 h-5 " />

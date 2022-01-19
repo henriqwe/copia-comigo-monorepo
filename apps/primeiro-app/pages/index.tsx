@@ -3,7 +3,7 @@ import { MainNavigation, FloatingCard} from "@comigo/ui-shared-components";
 import { Loader } from '@googlemaps/js-api-loader'
 import MainMenuItens from "../components/domains/MainMenuItens";
 import * as localizations from '../components/domains/monitoring/Localization'
-
+import {getStreetNameByLatLng} from '../components/domains/monitoring/Localization/api'
 type vehicle = {
   crs: string
   data: string
@@ -43,11 +43,13 @@ export function Page() {
     localizationsLoading,
     allUserVehicle,
     coordsToCenterMap,
+    vehicleConsultData,
     setVehicleConsultData,
     setSlidePanelState,
     vehicleOnFocusId,
     setVehicleOnFocusId,
-    localizationSchema
+    localizationSchema,
+    consultVehicleHistoric
   } = localizations.useLocalization()
   const [google, setGoogle] = useState<google>()
   const allMarkerVehiclesStep: google.maps.Marker[] = []
@@ -55,6 +57,7 @@ export function Page() {
     google.maps.Marker[]
   >([])
   const [mapa, setMapa] = useState<google.maps.Map>()
+  const  [selectedVehicle,setSelectedVehicle] = useState<vehicle>()
   
   function initMap() {
     const loader = new Loader({
@@ -120,7 +123,7 @@ export function Page() {
             marker,
             vehicle,
             mapa!,
-            setVehicleConsultData,
+            setSelectedVehicle,
             setSlidePanelState,
             setVehicleOnFocusId
           )
@@ -131,7 +134,7 @@ export function Page() {
           mapa,
           vehicle,
           allMarkerVehiclesStep,
-          setVehicleConsultData,
+          setSelectedVehicle,
           setSlidePanelState,
           setVehicleOnFocusId
         )
@@ -162,7 +165,14 @@ export function Page() {
       <div className="absolute   z-50 right-0 flex mr-16 mt-2.5" style={{ height: "95%"}}>
         <div className="w-72">
     
-          <FloatingCard allUserVehicle={allUserVehicle} schemaYup={localizationSchema} />
+          <FloatingCard 
+          allUserVehicle={allUserVehicle} 
+          schemaYup={localizationSchema} 
+          consultVehicleHistoric={consultVehicleHistoric} 
+          vehicleConsultData={vehicleConsultData}
+          getStreetNameByLatLng={getStreetNameByLatLng}
+          selectedVehicle={selectedVehicle}
+          setSelectedVehicle={setSelectedVehicle}/>
         </div>
       </div>
       
