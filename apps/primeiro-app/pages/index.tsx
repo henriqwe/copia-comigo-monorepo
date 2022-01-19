@@ -194,7 +194,7 @@ export function Page() {
   useEffect(() => {
     if (vehicleConsultData?.length > 0) {
       allMarkerVehicles.forEach((vehicle=> vehicle.setMap(null)))
-      createNewCarMarker(
+      createNewVehicleLocationMarker(
         infoWindowToRemove,
         selectedVehicle,
         mapa!,
@@ -258,6 +258,9 @@ function createNewVehicleMarker(
   })
   const infowindow = new google.maps.InfoWindow({
     content: `<div class='text-dark-7 w-80 m-0'>
+    <img
+      src="https://maps.googleapis.com/maps/api/streetview?size=320x100&location=${vehicle.latitude},${vehicle.longitude}&fov=80&heading=70&pitch=0&key=AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I">
+    </img>
     <div class='grid grid-cols-3'>
     <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold rounded-l-md py-2 border-2 !border-white '> ${
       vehicle.placa
@@ -298,6 +301,7 @@ function createNewVehicleMarker(
     </div>
     </div>`
   })
+  ;
   marker.addListener('click', async () => {
     setVehicleConsultData(vehicle)
     setSlidePanelState({ open: true })
@@ -313,6 +317,7 @@ function createNewVehicleMarker(
   marker.addListener('mouseout', () => {
     infowindow.close()
   })
+
   allMarkerVehiclesStep.push(marker)
 }
 
@@ -392,6 +397,9 @@ function updateVehicleMarker(
 
   const infowindow = new google.maps.InfoWindow({
     content: `<div class='text-dark-7 w-80 m-0'>
+    <img
+      src="https://maps.googleapis.com/maps/api/streetview?size=320x100&location=${vehicle.latitude},${vehicle.longitude}&fov=80&heading=70&pitch=0&key=AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I">
+    </img>
     <div class='grid grid-cols-3'>
     <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold rounded-l-md py-2 border-2 !border-white '> ${
       vehicle.placa
@@ -485,7 +493,7 @@ function centerPointInMap(coords, map, google, pointMarker, setPointMarker) {
   }, 3000)
 }
 
-function createNewCarMarker(
+function createNewVehicleLocationMarker(
   infoWindowToRemove: google.maps.InfoWindow[],
   selectedVehicle: vehicle,
   map: google.maps.Map,

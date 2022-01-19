@@ -229,9 +229,9 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
           <div className="flex-1 px-3 py-2 overflow-y-scroll">
             <SeparatorWithTitleAndNumber className='my-2' title={'Em trânsito'} number={vehiclesInTransit.length}/>
               {vehiclesInTransit.length > 0 && 
-                vehiclesInTransit.map(vehicle => {
+                vehiclesInTransit.map((vehicle) => {
                   return(
-                    <div onClick={()=>{
+                    <div key={vehicle.carro_id} onClick={()=>{
                       setPageCard('pagVehiclesDeatils')
                       setSelectedVehicle(vehicle)
                       }}>
@@ -249,7 +249,7 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
               {vehiclesStopped.length > 0 && 
                 vehiclesStopped.map(vehicle => {
                   return(
-                    <div onClick={()=>{setPageCard('pagVehiclesDeatils')
+                    <div key={vehicle.carro_id} onClick={()=>{setPageCard('pagVehiclesDeatils')
                     setSelectedVehicle(vehicle)}}>
                       <CardVehicle 
                           placa={vehicle.placa!} 
@@ -265,7 +265,7 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
               {vehiclesOff.length > 0 && 
                 vehiclesOff.map(vehicle => {
                   return(
-                    <div onClick={()=>{setPageCard('pagVehiclesDeatils')
+                    <div key={vehicle.carro_id} onClick={()=>{setPageCard('pagVehiclesDeatils')
                     setSelectedVehicle(vehicle)}}>
                       <CardVehicle 
                           placa={vehicle.placa!} 
