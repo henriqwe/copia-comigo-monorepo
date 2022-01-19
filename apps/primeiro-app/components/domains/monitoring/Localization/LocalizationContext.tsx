@@ -88,8 +88,7 @@ export const LocalizationProvider = ({ children }: ProviderProps) => {
   const [localizationsLoading, setLocalizationsLoading] = useState(false)
   const [vehicleOnFocusId, setVehicleOnFocusId] = useState<number>()
   const localizationSchema = yup.object().shape({
-    Colaborador_Id: yup.object(),
-    Cliente_Id: yup.object()
+    carro_id: yup.string()
   })
   function centerVehicleInMap(carroId: number) {
     const vehicle = allUserVehicle?.filter((elem: vehicle) => {

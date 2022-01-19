@@ -161,7 +161,7 @@ function Select({
                       />
                     )}
                   </div>
-                  <div className="max-h-96 overflow-y-auto">
+                  <div className="max-h-96 overflow-y-auto testClass">
                   {itensFiltred.length > 0 ? (
                     itensFiltred.map((item, personIdx: number) => (
                       <Listbox.Option
