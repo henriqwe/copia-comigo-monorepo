@@ -49,7 +49,9 @@ export function Page() {
     vehicleOnFocusId,
     setVehicleOnFocusId,
     localizationSchema,
-    consultVehicleHistoric
+    consultVehicleHistoric,
+    coordsToCenterPointInMap,
+    setCoordsToCenterPointInMap
   } = localizations.useLocalization()
   const [google, setGoogle] = useState<google>()
   const allMarkerVehiclesStep: google.maps.Marker[] = []
@@ -58,7 +60,10 @@ export function Page() {
   >([])
   const [mapa, setMapa] = useState<google.maps.Map>()
   const  [selectedVehicle,setSelectedVehicle] = useState<vehicle>()
-  
+  const [pointMarker, setPointMarker] = useState<
+    google.maps.Marker | undefined
+  >()
+
   function initMap() {
     const loader = new Loader({
       apiKey: 'AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I',
@@ -165,6 +170,17 @@ export function Page() {
     }
   }, [coordsToCenterMap,selectedVehicle])
 
+  useEffect(() => {
+    if (coordsToCenterPointInMap && mapa)
+      centerPointInMap(
+        coordsToCenterPointInMap,
+        mapa,
+        google,
+        pointMarker,
+        setPointMarker
+      )
+  }, [coordsToCenterPointInMap])
+
   return (
     <div className="flex max-h-screen">
       <div className="h-screen sticky top-0 z-50">
@@ -180,6 +196,7 @@ export function Page() {
           consultVehicleHistoric={consultVehicleHistoric} 
           vehicleConsultData={vehicleConsultData}
           getStreetNameByLatLng={getStreetNameByLatLng}
+          
           selectedVehicle={selectedVehicle}
           setSelectedVehicle={setSelectedVehicle}/>
         </div>
@@ -410,5 +427,35 @@ function updateVehicleMarker(
 async function getVehicleAddress(lat: string, lng: string) {
   const response = await getStreetNameByLatLng(lat, lng)
   return response.results[0].formatted_address
+}
+
+function centerPointInMap(coords, map, google, pointMarker, setPointMarker) {
+  if (pointMarker) pointMarker.setMap(null)
+
+  map.setCenter({
+    lat: Number(coords.latitude),
+    lng: Number(coords.longitude)
+  })
+  map.setZoom(13)
+  const markerPoint = new google.maps.Marker({
+    map,
+    animation: google.maps.Animation.BOUNCE,
+    icon: {
+      path: 'M0-48c-9.8 0-17.7 7.8-17.7 17.4 0 15.5 17.7 30.6 17.7 30.6s17.7-15.4 17.7-30.6c0-9.6-7.9-17.4-17.7-17.4z',
+      fillColor: '#FF0000',
+      fillOpacity: 1,
+      anchor: new google.maps.Point(0, 0),
+      scale: 0.5
+    },
+    position: {
+      lat: Number(coords.latitude),
+      lng: Number(coords.longitude)
+    },
+    zIndex: 2
+  })
+  setPointMarker(markerPoint)
+  setTimeout(() => {
+    markerPoint.setMap(null)
+  }, 3000)
 }
 

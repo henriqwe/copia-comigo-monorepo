@@ -1,7 +1,10 @@
-import { getStreetNameByLatLng } from '@/domains/erp/monitoring/api'
-import { ReactNode, useState } from 'react'
-import * as paths from '@/domains/erp/monitoring/Path'
+import { Dispatch, ReactNode, SetStateAction, useState } from 'react'
 
+type coordsToCenterMap = {
+  lat?: number;
+  lng?: number;
+  carro_id?: number;
+}
 type vehicle = {
   crs: string
   data: string
@@ -29,37 +32,30 @@ type vehicle = {
 type VehicleCardProps = {
   description?: ReactNode
   vehicle: vehicle
+  setCoordsToCenterPointInMap:Dispatch<SetStateAction<coordsToCenterMap>>
+  addressData:string
 }
 
 export default function VehicleCard({
   description,
-  vehicle
+  vehicle,
+  setCoordsToCenterPointInMap,
+  addressData
 }: VehicleCardProps) {
   // TODO: Refatorar estilo dos before's para não sobrepor a imagem
-  const { setCoordsToCenterPointInMap } = paths.usePath()
-
-  const [addressData, setAddressData] = useState('')
   let borderColor = '!border-black'
   let title = 'Ligado'
   if (Number(vehicle.speed) > 80) {
-    borderColor = '!border-primary-3'
+    borderColor = '!border-red-500'
     title = 'Evento de velocidade'
   } else if (Number(vehicle.speed).toFixed() === '0' && vehicle.ligado === 0) {
     borderColor = '!border-gray-500'
     title = 'Desligado'
   } else if (Number(vehicle.speed).toFixed() === '0' && vehicle.ligado === 1) {
-    borderColor = '!border-theme-1'
+    borderColor = '!border-blue-500'
     title = 'Parado'
   }
 
-  async function getStreetName(vehicleConsultData: vehicle) {
-    const response = await getStreetNameByLatLng(
-      vehicleConsultData.latitude,
-      vehicleConsultData.longitude
-    )
-
-    setAddressData(response.results[0].formatted_address)
-  }
   return (
     <div className="relative flex items-center mb-3 intro-x">
       <div className="report-timeline__image flex align-center flex-col">
@@ -73,12 +69,14 @@ export default function VehicleCard({
         </div>
       </div>
       <div
-        className="flex-1 px-5 py-3 ml-4 box bg-gray-300 dark:bg-dark-2 zoom-in hover:cursor-pointer dark:hover:bg-dark-4 hover:bg-gray-400"
+        className="flex-1 px-5 py-3 ml-4 box bg-gray-300 dark:bg-dark-2 zoom-in rounded-sm hover:cursor-pointer dark:hover:bg-dark-4 hover:bg-gray-400"
         onClick={() =>
-          setCoordsToCenterPointInMap({
-            latitude: vehicle.latitude,
-            longitude: vehicle.longitude
-          })
+          {
+          //   setCoordsToCenterPointInMap({
+          //   lat: Number(vehicle.latitude),
+          //   lng: Number(vehicle.longitude)
+          // })
+          }
         }
       >
         <div className="flex items-center">
@@ -99,7 +97,7 @@ export default function VehicleCard({
             <button
               className="underline"
               onClick={() => {
-                getStreetName(vehicle)
+                // getStreetName(vehicle)
               }}
             >
               Clique aqui para consultar o endereço

@@ -3,6 +3,11 @@ import { ChevronLeftIcon, ClockIcon, ExclamationIcon, LocationMarkerIcon, MapIco
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {common,SeparatorWithTitleAndNumber, CardVehicle} from '@comigo/ui-shared-components'
 
+type coordsToCenterMap = {
+  lat?: number;
+  lng?: number;
+  carro_id?: number;
+}
 type vehicle={
   crs: string
   data: string
@@ -43,21 +48,25 @@ type pagVehiclesDetailsProps ={
   setPageCard: Dispatch<SetStateAction<string>>
   selectedVehicle:  vehicle | undefined
   consultVehicleHistoric: (carro_id: string, inicio: string, fim: string) => void
-  vehicleConsultData: vehicle
+  vehicleConsultData: vehicle[]
   getStreetNameByLatLng: Promise<unknown>
   dadosEnd:string
+  setCoordsToCenterPointInMap: Dispatch<SetStateAction<coordsToCenterMap>>
+  moreDetails: boolean
+  setMoreDetails:Dispatch<SetStateAction<boolean>>
 }
 export interface FloatingCardProps {
   allUserVehicle:vehicle[]
   schemaYup: any
   consultVehicleHistoric: (carro_id: string, inicio: string, fim: string) => void
-  vehicleConsultData: vehicle
+  vehicleConsultData: vehicle[]
   getStreetNameByLatLng: Promise<unknown>
   selectedVehicle: vehicle | undefined
   setSelectedVehicle: Dispatch<SetStateAction<vehicle | undefined>>
+  setCoordsToCenterPointInMap: Dispatch<SetStateAction<coordsToCenterMap>>
 }
 
-export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,selectedVehicle,setSelectedVehicle }:FloatingCardProps) {
+export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,selectedVehicle,setSelectedVehicle,setCoordsToCenterPointInMap}:FloatingCardProps) {
   const [open,setOpen] = useState(true)
   const [titleFilter, setTitleFilter] = useState('Em trânsito')
 
@@ -68,6 +77,7 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
   const  [inputSearchValue,setInputSearchValue] = useState('')
   const  [pageCard,setPageCard] = useState('pagAllVehicles')
   const  [dadosEnd, setDadosEnd] = useState('')
+  const  [moreDetails, setMoreDetails] = useState(false)
 
   useEffect(() => {
     setShearchVehicle([...allUserVehicle])
@@ -81,7 +91,7 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
     shearchVehicle.forEach((vehicle)=>{
       if(vehicle.ligado === 1 && Number(vehicle.speed) >0){
         vehiclesInTransitFilter.push(vehicle) 
-      }else if(vehicle.ligado === 1 && Number(vehicle.speed) < 1){
+      }else if(vehicle.ligado === 1 && Number(vehicle.speed).toFixed() === '0'){
         vehiclesStoppedFilter.push(vehicle)
       }else if(vehicle.ligado === 0 ){
         vehiclesOffFilter.push(vehicle)
@@ -149,7 +159,7 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
           ):
           pageCard === 'pagVehiclesDeatils'?
           (
-            pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,dadosEnd})
+            pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,dadosEnd,setCoordsToCenterPointInMap,moreDetails, setMoreDetails})
           ):''
           
         )
@@ -158,7 +168,7 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
   );
 }
 
-function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTitleFilter,vehiclesInTransit,vehiclesStopped,vehiclesOff,setPageCard,setSelectedVehicle} :pagAllVehiclesProps){
+function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTitleFilter,vehiclesInTransit,vehiclesStopped,vehiclesOff,setPageCard,setSelectedVehicle,setCoordsToCenterPointInMap} :pagAllVehiclesProps){
   return(
     <>
           <div className=''>
@@ -244,7 +254,7 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
   )
 }
 
-function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,consultVehicleHistoric, vehicleConsultData,getStreetNameByLatLng,dadosEnd} :pagVehiclesDetailsProps){
+function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,consultVehicleHistoric, vehicleConsultData,getStreetNameByLatLng,dadosEnd,moreDetails, setMoreDetails} :pagVehiclesDetailsProps){
   
   function currentDateAndTime(type = '') {
     const date = new Date()
@@ -277,6 +287,32 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,co
       console.log(err)
     }
   }
+  function filterConsult(item: string) {
+    let result: vehicle[]
+    switch (item) {
+      case 'Visualizar todos':
+        // setVehicleConsultDataFiltered(vehicleConsultData)
+        break
+      case 'Eventos de velocidade':
+        result = vehicleConsultData?.filter((vehicle) => {
+          if (Number(vehicle.speed) > 80) {
+            return vehicle
+          }
+        })
+        // setVehicleConsultDataFiltered(result)
+        break
+      case 'Ignição ligada e parado':
+        result = vehicleConsultData?.filter((vehicle) => {
+          if (Number(vehicle.speed) < 1 && vehicle.ligado === 1) {
+            return vehicle
+          }
+        })
+        // setVehicleConsultDataFiltered(result)
+
+        break
+    }
+  }
+
   return(
     <>
           <div className=''>
@@ -295,7 +331,10 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,co
               <div className="mb-4">
               <div className="grid grid-flow-col w-full gap-2 mb-2">
                 <form
-                    onSubmit={(e)=>onSubmit(e)}
+                    onSubmit={(e)=>{
+                      onSubmit(e)
+                      setMoreDetails(true)
+                    }}
                     className="grid grid-cols-12"
                   >
               
@@ -352,68 +391,110 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,co
             </div>
           </div>
           <div className="flex-1 px-3 py-2 overflow-y-scroll">
-          {selectedVehicle && (
-        <div className="w-full mt-4">
-          <div className="flex justify-between items-center">
-            <p className="font-black text-lg">Informações sobre o veículo</p>
-            <button
-              // href={`/erp/monitoramento/trajetos/${vehicleConsultData.carro_id}?placa=${vehicleConsultData.placa}`}
-            >
-              <button
-                value="Ver trajeto"
-                className="col-span-3 justify-center flex"
-              />
-            </button>
-          </div>
-
-          <p>
-            <b className='text-sm'>Última atualização:</b>{' '}
-            <span className='text-sm'>
-            {new Date(selectedVehicle.date_rastreador).toLocaleDateString(
-              'pt-br',
-              {
-                dateStyle: 'short'
-              }
-            )}{' '}
-            {new Date(selectedVehicle.date_rastreador).toLocaleTimeString(
-              'pt-br',
-              {
-                timeStyle: 'medium'
-              }
-            )}</span>
-          </p>
-          <div className="relative mt-5 report-timeline">
-            <common.ListCard
-              icon={<ExclamationIcon className="w-6 h-6" />}
-              title={'Placa'}
-              description={<p>{selectedVehicle.placa}</p>}
-            />
-            <common.ListCard
-              icon={<LocationMarkerIcon className="w-6 h-6" />}
-              title={'Velocidade'}
-              description={
-                <p>{Math.floor(Number(selectedVehicle.speed)) + ' Km/H'}</p>
-              }
-            />
-            <common.ListCard
-              icon={<ClockIcon className="w-6 h-6" />}
-              title={'Ignição'}
-              description={
-                <div>
-                  <p>{selectedVehicle.ligado ? 'Ligado' : 'Desligado'}</p>
+          {!moreDetails ? (
+              <div className="w-full mt-4">
+                <div className="flex justify-between items-center">
+                  <p className="font-black text-lg">Informações sobre o veículo</p>
                 </div>
-              }
-            />
-            <common.ListCard
-              icon={<MapIcon className="w-6 h-6" />}
-              title={'Endereço'}
-              description={
-                dadosEnd ? <span>{dadosEnd}</span> : <span>Buscando...</span>
-              }             
-            />
-          </div>
-        </div>
-      )}
+
+                <p>
+                  <b className='text-sm'>Última atualização:</b>{' '}
+                  <span className='text-sm'>
+                  {new Date(selectedVehicle.date_rastreador).toLocaleDateString(
+                    'pt-br',
+                    {
+                      dateStyle: 'short'
+                    }
+                  )}{' '}
+                  {new Date(selectedVehicle.date_rastreador).toLocaleTimeString(
+                    'pt-br',
+                    {
+                      timeStyle: 'medium'
+                    }
+                  )}</span>
+                </p>
+                <div className="relative mt-5 report-timeline">
+                  <common.ListCard
+                    icon={<ExclamationIcon className="w-6 h-6" />}
+                    title={'Placa'}
+                    description={<p>{selectedVehicle.placa}</p>}
+                  />
+                  <common.ListCard
+                    icon={<LocationMarkerIcon className="w-6 h-6" />}
+                    title={'Velocidade'}
+                    description={
+                      <p>{Math.floor(Number(selectedVehicle.speed)) + ' Km/H'}</p>
+                    }
+                  />
+                  <common.ListCard
+                    icon={<ClockIcon className="w-6 h-6" />}
+                    title={'Ignição'}
+                    description={
+                      <div>
+                        <p>{selectedVehicle.ligado ? 'Ligado' : 'Desligado'}</p>
+                      </div>
+                    }
+                  />
+                  <common.ListCard
+                    icon={<MapIcon className="w-6 h-6" />}
+                    title={'Endereço'}
+                    description={
+                      dadosEnd ? <span>{dadosEnd}</span> : <span>Buscando...</span>
+                    }             
+                  />
+                </div>
+              </div>
+          ): 
+          (<div>
+              <div className='flex justify-between'>
+             
+                      <button
+                        onClick={() => {
+                          setMoreDetails(false)
+                        }}
+                        className=" justify-center flex bg-gray-700 rounded-sm text-gray-200 px-2 items-center"
+                      >
+                        <MinusIcon
+                          className="w-3 h-3 text-violet-200 hover:text-violet-100"
+                          aria-hidden="true"
+                        />{' '}
+                        Exibir menos
+                      </button>
+                      <common.Dropdown
+                          title={'Filtro'}
+                          handler={filterConsult}
+                          items={[
+                            'Visualizar todos',
+                            'Eventos de velocidade',
+                            'Ignição ligada e parado'
+                          ]}
+                        />
+                 
+              </div>
+              {vehicleConsultData?.length !== 0 ? (
+                <div className="relative mt-5 report-timeline">
+                  {vehicleConsultData?.map((vehicle, index) => {
+                    return (
+                      <common.VehicleCard
+                        key={index}
+                        vehicle={vehicle}
+                        description={
+                          <div>
+                            <p>Situação: {vehicle.speed}</p>
+                          </div>
+                        }
+                        setCoordsToCenterPointInMap={'a'}
+                        addressName={'Rua A'}
+                      />
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="w-full flex justify-center mt-4">
+                  <common.EmptyContent />
+                </div>
+              )}
+            </div>)}
           </div>
     </>
   )

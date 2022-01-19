@@ -63,6 +63,8 @@ type LocalizationContextProps = {
     inicio: string,
     fim: string
   ) => void
+  coordsToCenterPointInMap: coordsToCenterMap
+  setCoordsToCenterPointInMap: Dispatch<SetStateAction<coordsToCenterMap>>
 }
 
 type ProviderProps = {
@@ -95,6 +97,9 @@ export const LocalizationProvider = ({ children }: ProviderProps) => {
   const localizationSchema = yup.object().shape({
     carro_id: yup.string()
   })
+  const [coordsToCenterPointInMap, setCoordsToCenterPointInMap] =
+    useState<coordsToCenterMap>({})
+
   function centerVehicleInMap(carroId: number) {
     const vehicle = allUserVehicle?.filter((elem: vehicle) => {
       if (elem.carro_id === carroId) return elem
@@ -156,7 +161,9 @@ export const LocalizationProvider = ({ children }: ProviderProps) => {
         setVehicleConsultData,
         vehicleOnFocusId,
         setVehicleOnFocusId,
-        consultVehicleHistoric
+        consultVehicleHistoric,
+        coordsToCenterPointInMap,
+        setCoordsToCenterPointInMap,
       }}
     >
       {children}
