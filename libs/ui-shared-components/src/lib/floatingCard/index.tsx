@@ -54,6 +54,11 @@ type pagVehiclesDetailsProps ={
   setCoordsToCenterPointInMap: Dispatch<SetStateAction<coordsToCenterMap>>
   moreDetails: boolean
   setMoreDetails:Dispatch<SetStateAction<boolean>>
+  showAllVehiclesInMap:()=>void
+  dateStart: string
+  setDateStart: Dispatch<SetStateAction<string>>
+  dateEnd: string
+  setDateEnd: Dispatch<SetStateAction<string>>
 }
 export interface FloatingCardProps {
   allUserVehicle:vehicle[]
@@ -64,9 +69,10 @@ export interface FloatingCardProps {
   selectedVehicle: vehicle | undefined
   setSelectedVehicle: Dispatch<SetStateAction<vehicle | undefined>>
   setCoordsToCenterPointInMap: Dispatch<SetStateAction<coordsToCenterMap>>
+  showAllVehiclesInMap: ()=>void
 }
 
-export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,selectedVehicle,setSelectedVehicle,setCoordsToCenterPointInMap}:FloatingCardProps) {
+export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,selectedVehicle,setSelectedVehicle,setCoordsToCenterPointInMap,showAllVehiclesInMap}:FloatingCardProps) {
   const [open,setOpen] = useState(true)
   const [titleFilter, setTitleFilter] = useState('Em trânsito')
 
@@ -78,6 +84,35 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
   const  [pageCard,setPageCard] = useState('pagAllVehicles')
   const  [dadosEnd, setDadosEnd] = useState('')
   const  [moreDetails, setMoreDetails] = useState(false)
+  const  [dateStart,setDateStart]= useState(currentDateAndTime('onlyDate'))
+  const  [dateEnd,setDateEnd]= useState(currentDateAndTime(''))
+
+  function currentDateAndTime(type = '') {
+    const date = new Date()
+    let day = date.getDate()
+    let month = date.getMonth() + 1
+    const year = date.getFullYear()
+    if (day < 10) day = '0' + day
+    if (month < 10) month = '0' + month
+
+    if (type === 'onlyDate') return year + '-' + month + '-' + day + 'T00:00:00'
+
+    let hour = date.getHours()
+    let minute = date.getMinutes()
+    if (hour < 10) hour = '0' + hour
+    if (minute < 10) minute = '0' + minute
+
+    return year + '-' + month + '-' + day + 'T' + hour + ':' + minute + ':00'
+  }
+
+  async function getStreetName(vehicle: vehicle) {
+    const response = await getStreetNameByLatLng(
+      vehicle.latitude,
+      vehicle.longitude
+    )
+
+    setDadosEnd(response.results[0].formatted_address)
+  }
 
   useEffect(() => {
     setShearchVehicle([...allUserVehicle])
@@ -89,9 +124,9 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
     const vehiclesOffFilter:vehicle[] = []
 
     shearchVehicle.forEach((vehicle)=>{
-      if(vehicle.ligado === 1 && Number(vehicle.speed) >0){
+      if(vehicle.ligado === 1 && Number(vehicle.speed) >= 1){
         vehiclesInTransitFilter.push(vehicle) 
-      }else if(vehicle.ligado === 1 && Number(vehicle.speed).toFixed() === '0'){
+      }else if(vehicle.ligado === 1 && Number(vehicle.speed) < 1){
         vehiclesStoppedFilter.push(vehicle)
       }else if(vehicle.ligado === 0 ){
         vehiclesOffFilter.push(vehicle)
@@ -122,19 +157,13 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
   },[inputSearchValue])
 
   useEffect(() => {},[selectedVehicle])
-  async function getStreetName(vehicle: vehicle) {
-    const response = await getStreetNameByLatLng(
-      vehicle.latitude,
-      vehicle.longitude
-    )
-
-    setDadosEnd(response.results[0].formatted_address)
-  }
+  
  
   useEffect(() => {
     if (selectedVehicle) {
       getStreetName(selectedVehicle)
       setPageCard('pagVehiclesDeatils')
+      setMoreDetails(false)
     }
   }, [selectedVehicle])
 
@@ -159,7 +188,7 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
           ):
           pageCard === 'pagVehiclesDeatils'?
           (
-            pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,dadosEnd,setCoordsToCenterPointInMap,moreDetails, setMoreDetails})
+            pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,dadosEnd,setCoordsToCenterPointInMap,moreDetails, setMoreDetails,showAllVehiclesInMap,dateStart,setDateStart,dateEnd,setDateEnd})
           ):''
           
         )
@@ -168,7 +197,7 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
   );
 }
 
-function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTitleFilter,vehiclesInTransit,vehiclesStopped,vehiclesOff,setPageCard,setSelectedVehicle,setCoordsToCenterPointInMap} :pagAllVehiclesProps){
+function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTitleFilter,vehiclesInTransit,vehiclesStopped,vehiclesOff,setPageCard,setSelectedVehicle} :pagAllVehiclesProps){
   return(
     <>
           <div className=''>
@@ -254,25 +283,9 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
   )
 }
 
-function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,consultVehicleHistoric, vehicleConsultData,getStreetNameByLatLng,dadosEnd,moreDetails, setMoreDetails} :pagVehiclesDetailsProps){
+function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,dadosEnd,setCoordsToCenterPointInMap,moreDetails, setMoreDetails,showAllVehiclesInMap,dateStart,setDateStart,dateEnd,setDateEnd} :pagVehiclesDetailsProps){
   
-  function currentDateAndTime(type = '') {
-    const date = new Date()
-    let day = date.getDate()
-    let month = date.getMonth() + 1
-    const year = date.getFullYear()
-    if (day < 10) day = '0' + day
-    if (month < 10) month = '0' + month
-
-    if (type === 'onlyDate') return year + '-' + month + '-' + day + 'T00:00:00'
-
-    let hour = date.getHours()
-    let minute = date.getMinutes()
-    if (hour < 10) hour = '0' + hour
-    if (minute < 10) minute = '0' + minute
-
-    return year + '-' + month + '-' + day + 'T' + hour + ':' + minute + ':00'
-  }
+  
    const onSubmit = (formData: FormData) => {
     formData.preventDefault();
     try {
@@ -344,9 +357,9 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,co
                       type="datetime-local"
                       name='dateStart'
                       className="bg-gray-200 dark:bg-gray-700 p-2 rounded-md w-full"
-                      value={currentDateAndTime('onlyDate')}
-                      max={currentDateAndTime()}
-                      onChange={()=>'onChange'}
+                      value={dateStart}
+                      max={dateEnd}
+                      onChange={(e)=>setDateStart(e.target.value)}
                     />
                   </div>
              
@@ -356,9 +369,9 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,co
                       type="datetime-local"
                       name='dateEnd'
                       className="bg-gray-200 dark:bg-gray-700 p-2 rounded-md w-full"
-                      value={currentDateAndTime()}
-                      max={currentDateAndTime()}
-                      onChange={()=>'onChange'}
+                      value={dateEnd}
+                      max={dateEnd}
+                      onChange={(e)=>setDateEnd(e.target.value)}
                     />
                   </div>
                 
@@ -366,6 +379,7 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,co
                       <button
                         onClick={() => {
                           setPageCard('pagAllVehicles')
+                          showAllVehiclesInMap()
                         }}
                         className=" justify-center items-center flex"
                       >
@@ -483,7 +497,7 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard, selectedVehicle,co
                             <p>Situação: {vehicle.speed}</p>
                           </div>
                         }
-                        setCoordsToCenterPointInMap={'a'}
+                        setCoordsToCenterPointInMap={setCoordsToCenterPointInMap}
                         addressName={'Rua A'}
                       />
                     )

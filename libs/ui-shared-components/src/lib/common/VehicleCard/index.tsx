@@ -1,8 +1,8 @@
 import { Dispatch, ReactNode, SetStateAction, useState } from 'react'
 
 type coordsToCenterMap = {
-  lat?: number;
-  lng?: number;
+  latitude?: number;
+  longitude?: number;
   carro_id?: number;
 }
 type vehicle = {
@@ -43,16 +43,16 @@ export default function VehicleCard({
   addressData
 }: VehicleCardProps) {
   // TODO: Refatorar estilo dos before's para não sobrepor a imagem
-  let borderColor = '!border-black'
+  let borderColor = 'border-black'
   let title = 'Ligado'
   if (Number(vehicle.speed) > 80) {
-    borderColor = '!border-red-500'
+    borderColor = 'border-red-500'
     title = 'Evento de velocidade'
   } else if (Number(vehicle.speed).toFixed() === '0' && vehicle.ligado === 0) {
-    borderColor = '!border-gray-500'
+    borderColor = 'border-gray-500'
     title = 'Desligado'
   } else if (Number(vehicle.speed).toFixed() === '0' && vehicle.ligado === 1) {
-    borderColor = '!border-blue-500'
+    borderColor = 'border-blue-500'
     title = 'Parado'
   }
 
@@ -72,10 +72,10 @@ export default function VehicleCard({
         className="flex-1 px-5 py-3 ml-4 box bg-gray-300 dark:bg-dark-2 zoom-in rounded-sm hover:cursor-pointer dark:hover:bg-dark-4 hover:bg-gray-400"
         onClick={() =>
           {
-          //   setCoordsToCenterPointInMap({
-          //   lat: Number(vehicle.latitude),
-          //   lng: Number(vehicle.longitude)
-          // })
+            setCoordsToCenterPointInMap({
+              latitude: Number(vehicle.latitude),
+              longitude: Number(vehicle.longitude)
+          })
           }
         }
       >
