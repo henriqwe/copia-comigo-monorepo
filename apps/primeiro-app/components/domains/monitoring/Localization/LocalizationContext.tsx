@@ -121,7 +121,9 @@ export const LocalizationProvider = ({ children }: ProviderProps) => {
     const responseGetUserVehicles = await getAllUserVehicles(
       'operacional@radarescolta.com'
     )
-    if (responseGetUserVehicles) setAllUserVehicle(responseGetUserVehicles)
+    if (responseGetUserVehicles) {
+      setAllUserVehicle(responseGetUserVehicles)
+    }
     setLocalizationsLoading(false)
   }
 
