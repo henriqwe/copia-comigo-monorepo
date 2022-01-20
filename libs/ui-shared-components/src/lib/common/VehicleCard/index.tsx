@@ -33,14 +33,14 @@ type VehicleCardProps = {
   description?: ReactNode
   vehicle: vehicle
   setCoordsToCenterPointInMap:Dispatch<SetStateAction<coordsToCenterMap>>
-  addressData:string
+  getStreetNameByLatLn: any
 }
 
 export default function VehicleCard({
   description,
   vehicle,
   setCoordsToCenterPointInMap,
-  addressData
+  getStreetNameByLatLng
 }: VehicleCardProps) {
   // TODO: Refatorar estilo dos before's para não sobrepor a imagem
   let borderColor = 'border-black'
@@ -55,7 +55,15 @@ export default function VehicleCard({
     borderColor = 'border-blue-500'
     title = 'Parado'
   }
+  const [addressData, setAddressData]= useState('')
 
+  async function getStreetName(vehicle: vehicle){
+    const response = await getStreetNameByLatLng(
+      vehicle.latitude,
+      vehicle.longitude
+    )
+      setAddressData(response.results[0].formatted_address)
+  }
   return (
     <div className="relative flex items-center mb-3 intro-x">
       <div className="report-timeline__image flex align-center flex-col">
@@ -95,12 +103,12 @@ export default function VehicleCard({
             <span>{addressData}</span>
           ) : (
             <button
-              className="underline"
+              className="underline text-sm"
               onClick={() => {
-                // getStreetName(vehicle)
+                getStreetName(vehicle)
               }}
             >
-              Clique aqui para consultar o endereço
+              <span className='justify-end'>Clique aqui para consultar o endereço</span>
             </button>
           )}
         </div>

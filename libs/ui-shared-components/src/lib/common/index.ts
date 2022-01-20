@@ -51,7 +51,7 @@ export {
   Modal,
   Separator,
   AnimatedSpin,
-  // TitleWithSubTitleAtTheTop,
+  TitleWithSubTitleAtTheTop,
   // GenericTitle,
   // ListRadioGroup,
   // UploadFile,

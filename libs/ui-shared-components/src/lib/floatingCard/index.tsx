@@ -80,7 +80,7 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
   const  [vehiclesStopped,setVehiclesStopped] = useState<vehicle[]>([])
   const  [vehiclesOff,setVehiclesOff] = useState<vehicle[]>([])
   const  [shearchVehicle,setShearchVehicle] = useState<vehicle[]>([...allUserVehicle])
-  const  [inputSearchValue,setInputSearchValue] = useState('')
+  const  [inputSearchValue,setInputSearchValue] = useState<string|undefined>(undefined)
   const  [pageCard,setPageCard] = useState('pagAllVehicles')
   const  [dadosEnd, setDadosEnd] = useState('')
   const  [moreDetails, setMoreDetails] = useState(false)
@@ -114,13 +114,13 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
     setDadosEnd(response.results[0].formatted_address)
   }
   function filterVehicles(){
-    if(inputSearchValue===''){
+    if(inputSearchValue==='' ||inputSearchValue === undefined){
       setShearchVehicle([...allUserVehicle])
       return
     }
     const filter = allUserVehicle.filter((vehicle) => 
     {if(vehicle.placa?.toUpperCase()
-      .includes(inputSearchValue.toUpperCase()) ){
+      .includes(inputSearchValue?.toUpperCase()) ){
         return vehicle
       }
       return
@@ -172,8 +172,10 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
     <aside className={`flex flex-col w-full ${open?'h-full':'h-10'} bg-white rounded-sm`}>
       <div className={`flex bg-gray-900 h-10 w-full p-4 items-center  ${open?'rounded-t-sm':'rounded-sm'}  text-gray-100 justify-between`}>
         <LocationMarkerIcon className="w-5 h-5 text-gray-100 " />
-        <span className="text-sm">Veículos em tempo real</span>
-        <span className="text-sm bg-gray-800 px-2 rounded-full">{allUserVehicle ? allUserVehicle.length : 0 }</span>
+        <div>
+          <span className="text-sm ">Veículos</span>
+          <span className="text-sm ml-2 bg-gray-800 px-2 rounded-full">{allUserVehicle ? allUserVehicle.length : 0 }</span>
+        </div>
         <button onClick={()=>{setOpen(!open)}}>
           {open ?
           <MinusIcon className="w-5 h-5 text-gray-100 " />
@@ -202,17 +204,16 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
   return(
     <>
           <div className=''>
-            <div className="px-3 py-2 bg-gray-100">
+            <div className="px-3 py-3 bg-gray-100">
               <div className='ring-1 ring-gray-300 rounded-sm'>
                 <common.Form.Input
                   fieldName='Veículos'
                   title="Pesquise o veiculo aqui"
                   onChange={(e)=>{setInputSearchValue(e.target.value)}}
-                  value={inputSearchValue}
                 />
               </div>  
             </div>
-            <div className="flex items-center justify-between px-3 py-1 bg-gray-100">
+            {/* <div className="flex items-center justify-between px-3 py-1 bg-gray-100">
               <span className="text-sm text-gray-600" >Ordenar por</span>
               <common.Dropdown
                 title={titleFilter}
@@ -225,10 +226,9 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
                 ]}
               />
               
-            </div>
+            </div> */}
           </div>
           <div className="flex-1 px-3 py-2 overflow-y-scroll">
-            <SeparatorWithTitleAndNumber className='my-2' title={'Em trânsito'} number={vehiclesInTransit.length}/>
               {vehiclesInTransit.length > 0 && 
                 vehiclesInTransit.map((vehicle) => {
                   return(
@@ -246,7 +246,6 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
                     </div>
                   )
                 })}
-            <SeparatorWithTitleAndNumber className='my-2' title={'Parado'} number={vehiclesStopped.length}/>
               {vehiclesStopped.length > 0 && 
                 vehiclesStopped.map(vehicle => {
                   return(
@@ -262,7 +261,6 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
                     </div>
                   )
                 })}
-            <SeparatorWithTitleAndNumber className='my-2' title={'Desligado'} number={vehiclesOff.length}/>
               {vehiclesOff.length > 0 && 
                 vehiclesOff.map(vehicle => {
                   return(
@@ -278,7 +276,11 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
                     </div>
                   )
                 })}
-                 
+              {vehiclesOff.length === 0 && vehiclesStopped.length === 0 && vehiclesInTransit.length === 0 &&
+                  <div className="w-full flex justify-center mt-4">
+                   <common.EmptyContent />
+                  </div>
+              }
           </div>
       </>
   )
@@ -326,23 +328,33 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
         break
     }
   }
-
+  
   return(
     <>
           <div className=''>
-            <div className="px-3 py-2 bg-gray-100">
-              <div className='ring-1 ring-gray-300 rounded-sm'>
-                <common.Form.Input
-                  fieldName='Veículos'
-                  title="Pesquise o veiculo aqui"
-                  onChange={(e)=>{setInputSearchValue(e.target.value)}}
-                  disabled
-                  value={selectedVehicle?.placa}
-                />
-              </div>  
+            <div className="px-3 py-2 bg-gray-100 flex justify-between">
+              <common.TitleWithSubTitleAtTheTop
+                title={selectedVehicle?.placa!}
+                subtitle="Placa"
+              />
+              <common.TitleWithSubTitleAtTheTop
+                title={`${new Date(selectedVehicle.date_rastreador).toLocaleDateString(
+                  'pt-br',
+                  {
+                    dateStyle: 'short'
+                  }
+                )} 
+                ${new Date(selectedVehicle.date_rastreador).toLocaleTimeString(
+                  'pt-br',
+                  {
+                    timeStyle: 'medium'
+                  }
+                )}`}
+                subtitle="Última atualização"
+              />
             </div>
             <div className="flex items-center justify-between px-3 py-1 bg-gray-100">
-              <div className="mb-4 w-full">
+              <div className="mb-1 w-full">
                 <div className="grid grid-flow-col w-full gap-2 mb-2 ">
                 <form
                     onSubmit={(e)=>{
@@ -352,31 +364,31 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
                     className="grid grid-cols-12"
                   >
               
-                  <div className="col-span-12 mt-2">
-                    <p>De:</p>
+                  <div className="flex col-span-12 my-1 ">
+                    <p className=" flex items-center mr-2">De:</p>
                     <input
                       type="datetime-local"
                       name='dateStart'
-                      className="bg-gray-200 dark:bg-gray-700 p-2 rounded-md w-full"
+                      className="bg-gray-200 col-span-10 dark:bg-gray-700 p-2 rounded-md w-full"
                       value={dateStart}
                       max={dateEnd}
                       onChange={(e)=>setDateStart(e.target.value)}
                     />
                   </div>
              
-                  <div className="col-span-12 my-2">
-                    <p>Até:</p>
+                  <div className="flex col-span-12 my-1">
+                    <p className="flex items-center justify-end pr-1">Até:</p>
                     <input
                       type="datetime-local"
                       name='dateEnd'
-                      className="bg-gray-200 dark:bg-gray-700 p-2 rounded-md w-full"
+                      className="col-span-10 bg-gray-200 dark:bg-gray-700 p-2 rounded-md w-full"
                       value={dateEnd}
                       max={dateEnd}
                       onChange={(e)=>setDateEnd(e.target.value)}
                     />
                   </div>
                 
-                  <div className='flex justify-between col-span-12'>
+                  <div className='flex justify-between col-span-12 mt-4'>
                       <button
                         onClick={() => {
                           setPageCard('pagAllVehicles')
@@ -385,14 +397,14 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
                         className=" justify-center items-center flex"
                       >
                         <ChevronLeftIcon
-                          className="w-5 h-5 ml-2 -mr-1 text-violet-200 hover:text-violet-100"
+                          className="w-5 h-5  text-violet-200 hover:text-violet-100"
                           aria-hidden="true"
                         />{' '}
                         Voltar
                       </button>
                       <button
                       type='submit'
-                      className="col-span-3 justify-center items-center flex bg-gray-700 rounded-sm text-gray-200 px-2"
+                      className="col-span-3 justify-center items-center flex bg-gray-700 rounded-sm text-gray-200 px-2 py-1"
                       // disabled={pathsLoading}
                       // loading={pathsLoading}
                     > <SearchIcon className="w-5 h-5 text-gray-200"/></button>
@@ -408,32 +420,7 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
           <div className="flex-1 px-3 py-2 overflow-y-scroll">
           {!moreDetails ? (
               <div className="w-full mt-4">
-                <div className="flex justify-between items-center">
-                  <p className="font-black text-lg">Informações sobre o veículo</p>
-                </div>
-
-                <p>
-                  <b className='text-sm'>Última atualização:</b>{' '}
-                  <span className='text-sm'>
-                  {new Date(selectedVehicle.date_rastreador).toLocaleDateString(
-                    'pt-br',
-                    {
-                      dateStyle: 'short'
-                    }
-                  )}{' '}
-                  {new Date(selectedVehicle.date_rastreador).toLocaleTimeString(
-                    'pt-br',
-                    {
-                      timeStyle: 'medium'
-                    }
-                  )}</span>
-                </p>
                 <div className="relative mt-5 report-timeline">
-                  <common.ListCard
-                    icon={<ExclamationIcon className="w-6 h-6" />}
-                    title={'Placa'}
-                    description={<p>{selectedVehicle.placa}</p>}
-                  />
                   <common.ListCard
                     icon={<LocationMarkerIcon className="w-6 h-6" />}
                     title={'Velocidade'}
@@ -499,7 +486,7 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
                           </div>
                         }
                         setCoordsToCenterPointInMap={setCoordsToCenterPointInMap}
-                        addressName={'Rua A'}
+                        getStreetNameByLatLng={getStreetNameByLatLng}
                       />
                     )
                   })}

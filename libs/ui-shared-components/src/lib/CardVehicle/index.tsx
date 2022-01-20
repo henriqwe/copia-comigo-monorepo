@@ -44,7 +44,7 @@ export function CardVehicle({placa,travelTime,statusVehicle, addressName,driverN
     <common.Card  className={`hover:bg-gray-200 bg-gray-100 my-4 p-2 text-gray-600 ${className}`}>
       <div className="grid grid-cols-12" >
         <div className="col-span-2 flex items-center justify-center relative">
-          <span className={`w-3 h-3 ${statsColor} rounded-full absolute -ml-14`}/>
+          <span className={`w-3 h-3 ${statsColor} rounded-full absolute -ml-16`}/>
           <TruckIcon className="w-5 h-5 " />
         </div>
         <div className="col-span-5 flex items-start justify-self-center  flex-col">

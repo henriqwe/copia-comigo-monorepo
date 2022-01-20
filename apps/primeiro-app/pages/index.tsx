@@ -227,7 +227,7 @@ export function Page() {
       </div>
    
       <div className="absolute z-50 right-0 flex mr-16 mt-2.5" style={{ height: "95%"}}>
-        <div className="w-72">
+        <div className="w-80">
     
           <FloatingCard 
           allUserVehicle={allUserVehicle} 

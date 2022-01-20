@@ -80,16 +80,7 @@ export function Page() {
       <div className="h-screen sticky top-0 z-50">
        <MainNavigation mainMenuItens={MainMenuItens}/>
       </div>
-      <FloatingCard 
-          allUserVehicle={allUserVehicle} 
-          schemaYup={localizationSchema} 
-          consultVehicleHistoric={consultVehicleHistoric} 
-          vehicleConsultData={vehicleConsultData}
-          getStreetNameByLatLng={getStreetNameByLatLng}
-          showAllVehiclesInMap={showAllVehiclesInMap}
-          selectedVehicle={selectedVehicle}
-          setSelectedVehicle={setSelectedVehicle}
-          setCoordsToCenterPointInMap={setCoordsToCenterPointInMap}/>
+      
     </div>
   );
 }

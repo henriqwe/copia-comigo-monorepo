@@ -17,11 +17,11 @@ export default function ListCard({ title, icon, description }: ListCardProps) {
           {icon}
         </div>
       </div>
-      <div className="flex-1 px-5 py-3 ml-4 box bg-gray-300 dark:bg-dark-2 zoom-in">
+      <div className="flex-1 px-5 py-3 ml-4 box bg-gray-300 dark:bg-dark-2 zoom-in rounded-sm">
         <div className="flex items-center">
           <div className="font-medium">{title}</div>
         </div>
-        <div className="mt-1 text-gray-600">{description}</div>
+        <div className=" text-gray-600">{description}</div>
       </div>
     </div>
   )
