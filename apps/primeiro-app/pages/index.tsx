@@ -29,7 +29,7 @@ type vehicle = {
   date_rastreador?: string
 }
 
-export default function Localizacao() {
+export default function Index() {
   return (
     <localizations.LocalizationProvider>
       <Page />
@@ -63,12 +63,14 @@ export function Page() {
   const [pointMarker, setPointMarker] = useState<
     google.maps.Marker | undefined
   >()
-  const infoWindowToRemove: google.maps.InfoWindow[] = []
+  const infoWindowToRemoveLocation: google.maps.Marker[] = []
+  const infoWindowToRemovePath: google.maps.InfoWindow[] = []
   const [markersAndLine, setMarkersAndLine] = useState<{
     markers: google.maps.Marker[]
     line: google.maps.Polyline
   }>()
-
+  const [panorama,setPanorama]=useState<google.maps.StreetViewPanorama>()
+  
   function initMap() {
     const loader = new Loader({
       apiKey: 'AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I',
@@ -102,7 +104,15 @@ export function Page() {
           }
         )
         map.setOptions({ styles })  
-        setMapa(map)      
+        let pano = map.getStreetView()
+        pano.setPov(
+          {
+            heading: 265,
+            pitch: 0,
+          }
+        );
+        setPanorama(pano)
+        setMapa(map)  
       })
       .catch((e) => {
         console.log('error: ', e)
@@ -143,7 +153,9 @@ export function Page() {
             mapa!,
             setSelectedVehicle,
             setSlidePanelState,
-            setVehicleOnFocusId
+            setVehicleOnFocusId,
+            infoWindowToRemoveLocation,
+            panorama
           )
           return
         }
@@ -154,7 +166,9 @@ export function Page() {
           allMarkerVehiclesStep,
           setSelectedVehicle,
           setSlidePanelState,
-          setVehicleOnFocusId
+          setVehicleOnFocusId,
+          infoWindowToRemoveLocation,
+          panorama
         )
       })
     const markersToAdd = allMarkerVehiclesStep.filter((markerStep) => {
@@ -194,8 +208,8 @@ export function Page() {
   useEffect(() => {
     if (vehicleConsultData?.length > 0) {
       allMarkerVehicles.forEach((vehicle=> vehicle.setMap(null)))
-      createNewVehicleLocationMarker(
-        infoWindowToRemove,
+      createNewVehiclePathMarker(
+        infoWindowToRemovePath,
         selectedVehicle,
         mapa!,
         google,
@@ -229,6 +243,7 @@ export function Page() {
       </div>
       
       <div className="w-full h-screen" id="googleMaps" />
+      
     </div>
   );
 }
@@ -239,7 +254,9 @@ function createNewVehicleMarker(
   allMarkerVehiclesStep: google.maps.Marker[] | any[],
   setVehicleConsultData,
   setSlidePanelState,
-  setVehicleOnFocusId: number
+  setVehicleOnFocusId: number,
+  infoWindowToRemoveLocation: google.maps.Marker[],
+  panorama
 ) {
   const marker = new google.maps.Marker({
     map,
@@ -256,68 +273,25 @@ function createNewVehicleMarker(
       rotation: Number(vehicle.crs)
     }
   })
-  const infowindow = new google.maps.InfoWindow({
-    content: `<div class='text-dark-7 w-80 m-0'>
-    <img
-      src="https://maps.googleapis.com/maps/api/streetview?size=320x100&location=${vehicle.latitude},${vehicle.longitude}&fov=80&heading=70&pitch=0&key=AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I">
-    </img>
-    <div class='grid grid-cols-3'>
-    <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold rounded-l-md py-2 border-2 !border-white '> ${
-      vehicle.placa
-    }</div>
-    <div class='grid-span-1  flex bg-theme-22  justify-center items-center font-semibold border-2  py-2 !border-white' >
-    <div class='mr-1 ${
-      vehicle.ligado
-        ? Number(vehicle.speed).toFixed() === '0'
-          ? 'text-theme-10'
-          : 'text-theme-9'
-        : 'text-theme-13'
-    }'>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="w-3 h-3"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
-    </div><span>${
-      vehicle.ligado
-        ? Number(vehicle.speed).toFixed() === '0'
-          ? ' Parado'
-          : ' Ligado'
-        : ' Desligado'
-    }</span>
-    </div>
-    <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold border-2 !border-white rounded-r-md py-2'>${Math.floor(
-      Number(vehicle.speed)
-    )} km/h</div> 
-    </div>
-    
-    <div class="my-2">
-    <p><b>Última atualização: ${new Date(
-      vehicle.date_rastreador
-    ).toLocaleDateString('pt-br', {
-      dateStyle: 'short'
-    })}
-    ${new Date(vehicle.date_rastreador).toLocaleTimeString('pt-br', {
-      timeStyle: 'medium'
-    })}</b> </p>
-    <p><b>${vehicle.veiculo}</b> </p>
-    <p><b>${'NOME DO MOTORISTA'}</b> </p>
-    </div>
-    </div>`
-  })
-  ;
+  
+  marker.infowindow = new google.maps.InfoWindow()
+
+  marker.infowindow.setContent(createContentInfoWindow(vehicle,panorama))
+  
   marker.addListener('click', async () => {
+    if (infoWindowToRemoveLocation) {
+      infoWindowToRemoveLocation.forEach((marker) => marker.infowindow.close())
+    }
     setVehicleConsultData(vehicle)
     setSlidePanelState({ open: true })
-    setVehicleOnFocusId(Number(vehicle.carro_id))
-  })
-  marker.addListener('mouseover', () => {
-    infowindow.open({
-      anchor: marker,
+    // setVehicleOnFocusId(Number(vehicle.carro_id))
+    marker.infowindow.open({
+      anchor:marker,
       map,
       shouldFocus: false
     })
   })
-  marker.addListener('mouseout', () => {
-    infowindow.close()
-  })
-
+  infoWindowToRemoveLocation.push(marker)
   allMarkerVehiclesStep.push(marker)
 }
 
@@ -378,7 +352,9 @@ function updateVehicleMarker(
   map: google.maps.Map,
   setVehicleConsultData,
   setSlidePanelState,
-  setVehicleOnFocusId
+  setVehicleOnFocusId,
+  infoWindowToRemoveLocation: google.maps.Marker[],
+  panorama
 ) {
   const currentMarkerPos = new google.maps.LatLng(
     Number(vehicle.latitude),
@@ -392,70 +368,24 @@ function updateVehicleMarker(
   marker.setIcon(icon)
 
   google.maps.event.clearListeners(marker, 'click')
-  google.maps.event.clearListeners(marker, 'mouseover')
-  google.maps.event.clearListeners(marker, 'mouseout')
-
-  const infowindow = new google.maps.InfoWindow({
-    content: `<div class='text-dark-7 w-80 m-0'>
-    <img
-      src="https://maps.googleapis.com/maps/api/streetview?size=320x100&location=${vehicle.latitude},${vehicle.longitude}&fov=80&heading=70&pitch=0&key=AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I">
-    </img>
-    <div class='grid grid-cols-3'>
-    <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold rounded-l-md py-2 border-2 !border-white '> ${
-      vehicle.placa
-    }</div>
-    <div class='grid-span-1  flex bg-theme-22  justify-center items-center font-semibold border-2  py-2 !border-white' >
-    <div class='mr-1 ${
-      vehicle.ligado
-        ? Number(vehicle.speed).toFixed() === '0'
-          ? 'text-theme-10'
-          : 'text-theme-9'
-        : 'text-theme-13'
-    }'>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="w-3 h-3"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
-    </div><span>${
-      vehicle.ligado
-        ? Number(vehicle.speed).toFixed() === '0'
-          ? ' Parado'
-          : ' Ligado'
-        : ' Desligado'
-    }</span>
-    </div>
-    <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold border-2 !border-white rounded-r-md py-2'>${Math.floor(
-      Number(vehicle.speed)
-    )} km/h</div> 
-    </div>
-    
-    <div class="my-2">
-    <p><b>Última atualização: ${new Date(
-      vehicle.date_rastreador
-    ).toLocaleDateString('pt-br', {
-      dateStyle: 'short'
-    })}
-    ${new Date(vehicle.date_rastreador).toLocaleTimeString('pt-br', {
-      timeStyle: 'medium'
-    })}</b> </p>
-    <p><b>${vehicle.veiculo}</b> </p>
-    <p><b>${'NOME DO MOTORISTA'}</b> </p>
-
-    </div>
-    </div>`
-  })
+  
+  marker.infowindow.setContent(createContentInfoWindow(vehicle,panorama))
+  
   marker.addListener('click', async () => {
+    if (infoWindowToRemoveLocation) {
+      infoWindowToRemoveLocation.forEach((marker) => marker.infowindow.close())
+    }
     setVehicleConsultData(vehicle)
     setSlidePanelState({ open: true })
     setVehicleOnFocusId(vehicle.carro_id)
-  })
-  marker.addListener('mouseover', () => {
-    infowindow.open({
-      anchor: marker,
+    marker.infowindow.open({
+      anchor:marker,
       map,
       shouldFocus: false
     })
   })
-  marker.addListener('mouseout', () => {
-    infowindow.close()
-  })
+  infoWindowToRemoveLocation.push(marker)
+
 }
 
 async function getVehicleAddress(lat: string, lng: string) {
@@ -493,8 +423,8 @@ function centerPointInMap(coords, map, google, pointMarker, setPointMarker) {
   }, 3000)
 }
 
-function createNewVehicleLocationMarker(
-  infoWindowToRemove: google.maps.InfoWindow[],
+function createNewVehiclePathMarker(
+  infoWindowToRemovePath: google.maps.InfoWindow[],
   selectedVehicle: vehicle,
   map: google.maps.Map,
   google: any,
@@ -544,10 +474,10 @@ function createNewVehicleLocationMarker(
       rotation: Number(pathCoords[pathCoords.length - 1].crs)
     }
   })
-  marker.addListener('mouseover', async () => {
-    if (infoWindowToRemove) {
-      infoWindowToRemove.forEach((info) => info.close())
-      infoWindowToRemove.length = 0
+  marker.addListener('click', async () => {
+    if (infoWindowToRemovePath) {
+      infoWindowToRemovePath.forEach((info) => info.close())
+      infoWindowToRemovePath.length = 0
     }
     const addres = await getVehicleAddress(
       pathCoords[pathCoords.length - 1].latitude,
@@ -555,6 +485,9 @@ function createNewVehicleLocationMarker(
     )
     const infowindow = new google.maps.InfoWindow({
       content: `<div class='text-dark-7 w-80 m-0'>
+      <img
+        src="https://maps.googleapis.com/maps/api/streetview?size=320x100&location=${selectedVehicle.latitude},${selectedVehicle.longitude}&fov=80&heading=70&pitch=0&key=AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I">
+      </img>
       <div class='grid grid-cols-3'>
       <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold rounded-l-md py-2 border-2 !border-white '> ${
         selectedVehicle.placa
@@ -604,13 +537,7 @@ function createNewVehicleLocationMarker(
       map,
       shouldFocus: false
     })
-    infoWindowToRemove.push(infowindow)
-  })
-  marker.addListener('mouseout', () => {
-    if (infoWindowToRemove) {
-      infoWindowToRemove.forEach((info) => info.close())
-      infoWindowToRemove.length = 0
-    }
+    infoWindowToRemovePath.push(infowindow)
   })
 
   const markerStart = new google.maps.Marker({
@@ -689,7 +616,7 @@ function createNewVehicleLocationMarker(
         stop,
         durationMs,
         selectedVehicle,
-        infoWindowToRemove
+        infoWindowToRemovePath
       )
 
       const arrival = new google.maps.LatLng(
@@ -707,7 +634,7 @@ function createNewVehicleLocationMarker(
     stop: boolean,
     downTime: number,
     selectedVehicle: vehicle,
-    infoWindowToRemove: google.maps.InfoWindow[]
+    infoWindowToRemovePath: google.maps.InfoWindow[]
   ) {
     let events = ''
 
@@ -749,10 +676,10 @@ function createNewVehicleLocationMarker(
         rotation: Number(vehicle.crs) - 180
       }
     })
-    markerlocal.addListener('mouseover', async () => {
-      if (infoWindowToRemove) {
-        infoWindowToRemove.forEach((info) => info.close())
-        infoWindowToRemove.length = 0
+    markerlocal.addListener('click', async () => {
+      if (infoWindowToRemovePath) {
+        infoWindowToRemovePath.forEach((info) => info.close())
+        infoWindowToRemovePath.length = 0
       }
       const addres = await getVehicleAddress(
         vehicle.latitude,
@@ -760,6 +687,9 @@ function createNewVehicleLocationMarker(
       )
       const infowindow = new google.maps.InfoWindow({
         content: `<div class='text-dark-7 w-80 m-0'>
+        <img
+          src="https://maps.googleapis.com/maps/api/streetview?size=320x100&location=${vehicle.latitude},${vehicle.longitude}&fov=80&heading=70&pitch=0&key=AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I">
+        </img>
         <div class='grid grid-cols-3'>
         <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold rounded-l-md py-2 border-2 !border-white '> ${
           selectedVehicle.placa
@@ -810,14 +740,9 @@ function createNewVehicleLocationMarker(
         map,
         shouldFocus: false
       })
-      infoWindowToRemove.push(infowindow)
+      infoWindowToRemovePath.push(infowindow)
     })
-    markerlocal.addListener('mouseout', () => {
-      if (infoWindowToRemove) {
-        infoWindowToRemove.forEach((info) => info.close())
-        infoWindowToRemove.length = 0
-      }
-    })
+    
     markers.push(markerlocal)
     // }
   }
@@ -825,4 +750,64 @@ function createNewVehicleLocationMarker(
   markers.push(marker)
   markers.push(markerStart)
   setMarkersAndLine({ markers, line })
+}
+
+function createContentInfoWindow(vehicle:vehicle,panorama){
+  
+  const content =`<div class='text-dark-7 w-80 m-0'>
+  <img
+    src="https://maps.googleapis.com/maps/api/streetview?size=320x100&location=${vehicle.latitude},${vehicle.longitude}&fov=80&heading=70&pitch=0&key=AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I" >
+  </img>
+  <div class='grid grid-cols-3'>
+  <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold rounded-l-md py-2 border-2 !border-white '> ${
+    vehicle.placa
+  }</div>
+  <div class='grid-span-1  flex bg-theme-22  justify-center items-center font-semibold border-2  py-2 !border-white' >
+  <div class='mr-1 ${
+    vehicle.ligado
+      ? Number(vehicle.speed).toFixed() === '0'
+        ? 'text-theme-10'
+        : 'text-theme-9'
+      : 'text-theme-13'
+  }'>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="w-3 h-3"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+  </div><span>${
+    vehicle.ligado
+      ? Number(vehicle.speed).toFixed() === '0'
+        ? ' Parado'
+        : ' Ligado'
+      : ' Desligado'
+  }</span>
+  </div>
+  <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold border-2 !border-white rounded-r-md py-2'>${Math.floor(
+    Number(vehicle.speed)
+  )} km/h</div> 
+  </div>
+  
+  <div class="my-2">
+  <p><b>Última atualização: ${new Date(
+    vehicle.date_rastreador
+  ).toLocaleDateString('pt-br', {
+    dateStyle: 'short'
+  })}
+  ${new Date(vehicle.date_rastreador).toLocaleTimeString('pt-br', {
+    timeStyle: 'medium'
+  })}</b> </p>
+  <p><b>${vehicle.veiculo}</b> </p>
+  <p><b>${'NOME DO MOTORISTA'}</b> </p>
+  </div>
+  </div>`
+  
+  return content
+}
+
+function toggleStreetView(lat:number,lng:number,panorama): void {
+  panorama.setPosition({ lat, lng })
+  const toggle = panorama.getVisible();
+
+  if (toggle == false) {
+    panorama.setVisible(true);
+  } else {
+    panorama.setVisible(false);
+  }
 }

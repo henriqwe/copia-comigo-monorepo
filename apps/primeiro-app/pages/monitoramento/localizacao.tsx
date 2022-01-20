@@ -2,7 +2,33 @@ import { FloatingCard, MainNavigation} from "@comigo/ui-shared-components";
 import { Loader } from '@googlemaps/js-api-loader'
 import { useEffect } from 'react';
 import MainMenuItens from "../../components/domains/MainMenuItens";
-export function Index() {
+import * as localizations from '../../components/domains/monitoring/Localization'
+
+
+export default function Localizacao() {
+  return (
+    <localizations.LocalizationProvider>
+      <Page />
+    </localizations.LocalizationProvider>
+  )
+}
+
+export function Page() {
+  const {
+    localizationsRefetch,
+    localizationsLoading,
+    allUserVehicle,
+    coordsToCenterMap,
+    vehicleConsultData,
+    setVehicleConsultData,
+    setSlidePanelState,
+    vehicleOnFocusId,
+    setVehicleOnFocusId,
+    localizationSchema,
+    consultVehicleHistoric,
+    coordsToCenterPointInMap,
+    setCoordsToCenterPointInMap
+  } = localizations.useLocalization()
 
   function initMap() {
     const loader = new Loader({
@@ -54,9 +80,17 @@ export function Index() {
       <div className="h-screen sticky top-0 z-50">
        <MainNavigation mainMenuItens={MainMenuItens}/>
       </div>
-      <FloatingCard/>
+      <FloatingCard 
+          allUserVehicle={allUserVehicle} 
+          schemaYup={localizationSchema} 
+          consultVehicleHistoric={consultVehicleHistoric} 
+          vehicleConsultData={vehicleConsultData}
+          getStreetNameByLatLng={getStreetNameByLatLng}
+          showAllVehiclesInMap={showAllVehiclesInMap}
+          selectedVehicle={selectedVehicle}
+          setSelectedVehicle={setSelectedVehicle}
+          setCoordsToCenterPointInMap={setCoordsToCenterPointInMap}/>
     </div>
   );
 }
 
-export default Index;

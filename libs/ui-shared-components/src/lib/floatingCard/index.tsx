@@ -1,5 +1,5 @@
 /* eslint-disable-next-line */
-import { ChevronLeftIcon, ClockIcon, ExclamationIcon, LocationMarkerIcon, MapIcon, MinusIcon, PlusIcon, TruckIcon, UserIcon} from "@heroicons/react/outline";
+import { ChevronLeftIcon, ClockIcon, ExclamationIcon, LocationMarkerIcon, MapIcon, MinusIcon, PlusIcon, SearchIcon, TruckIcon, UserIcon} from "@heroicons/react/outline";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {common,SeparatorWithTitleAndNumber, CardVehicle} from '@comigo/ui-shared-components'
 
@@ -113,9 +113,25 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
 
     setDadosEnd(response.results[0].formatted_address)
   }
-
+  function filterVehicles(){
+    if(inputSearchValue===''){
+      setShearchVehicle([...allUserVehicle])
+      return
+    }
+    const filter = allUserVehicle.filter((vehicle) => 
+    {if(vehicle.placa?.toUpperCase()
+      .includes(inputSearchValue.toUpperCase()) ){
+        return vehicle
+      }
+      return
+    })
+    setShearchVehicle(filter)
+  }
   useEffect(() => {
     setShearchVehicle([...allUserVehicle])
+    if(inputSearchValue != ''){
+      filterVehicles()
+    }
   },[allUserVehicle])
 
   useEffect(() => {
@@ -141,23 +157,8 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
   },[shearchVehicle])
 
   useEffect(() => {
-    if(inputSearchValue===''){
-      setShearchVehicle([...allUserVehicle])
-      return
-    }
-    const filter = allUserVehicle.filter((vehicle) => 
-    {if(vehicle.placa?.toUpperCase()
-      .includes(inputSearchValue.toUpperCase()) ){
-        return vehicle
-      }
-      return
-  })
-  console.log(filter)
-    setShearchVehicle(filter)
+    filterVehicles()
   },[inputSearchValue])
-
-  useEffect(() => {},[selectedVehicle])
-  
  
   useEffect(() => {
     if (selectedVehicle) {
@@ -286,7 +287,7 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
 function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,dadosEnd,setCoordsToCenterPointInMap,moreDetails, setMoreDetails,showAllVehiclesInMap,dateStart,setDateStart,dateEnd,setDateEnd} :pagVehiclesDetailsProps){
   
   
-   const onSubmit = (formData: FormData) => {
+  const onSubmit = (formData: FormData) => {
     formData.preventDefault();
     try {
       
@@ -341,8 +342,8 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
               </div>  
             </div>
             <div className="flex items-center justify-between px-3 py-1 bg-gray-100">
-              <div className="mb-4">
-              <div className="grid grid-flow-col w-full gap-2 mb-2">
+              <div className="mb-4 w-full">
+                <div className="grid grid-flow-col w-full gap-2 mb-2 ">
                 <form
                     onSubmit={(e)=>{
                       onSubmit(e)
@@ -391,10 +392,10 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
                       </button>
                       <button
                       type='submit'
-                      className="col-span-3 justify-center flex bg-gray-700 rounded-sm text-gray-200 px-2"
+                      className="col-span-3 justify-center items-center flex bg-gray-700 rounded-sm text-gray-200 px-2"
                       // disabled={pathsLoading}
                       // loading={pathsLoading}
-                    >Consultar</button>
+                    > <SearchIcon className="w-5 h-5 text-gray-200"/></button>
                   </div>
               
                   </form>
@@ -469,10 +470,10 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
                         className=" justify-center flex bg-gray-700 rounded-sm text-gray-200 px-2 items-center"
                       >
                         <MinusIcon
-                          className="w-3 h-3 text-violet-200 hover:text-violet-100"
+                          className="w-3 h-3 text-violet-200 hover:text-violet-100 mr-2"
                           aria-hidden="true"
-                        />{' '}
-                        Exibir menos
+                        />{'  '}
+                        <span className='text-xs'> Exibir menos</span>
                       </button>
                       <common.Dropdown
                           title={'Filtro'}
