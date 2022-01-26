@@ -42,6 +42,11 @@ type pagAllVehiclesProps ={
   vehiclesOff: vehicle[]
   setPageCard: Dispatch<SetStateAction<string>>
   setSelectedVehicle: Dispatch<SetStateAction<vehicle | undefined>>
+  refsCardVehicle: React.MutableRefObject<any[]>
+  shearchVehicle: vehicle[]
+  openCardKey: number | undefined
+  setOpenCardKey: Dispatch<SetStateAction<number | undefined>>
+  
 }
 type pagVehiclesDetailsProps ={
   setInputSearchValue: Dispatch<SetStateAction<string>>
@@ -59,6 +64,7 @@ type pagVehiclesDetailsProps ={
   setDateStart: Dispatch<SetStateAction<string>>
   dateEnd: string
   setDateEnd: Dispatch<SetStateAction<string>>
+  refsPathVehicle: React.MutableRefObject<any[]>
 }
 export interface FloatingCardProps {
   allUserVehicle:vehicle[]
@@ -70,16 +76,19 @@ export interface FloatingCardProps {
   setSelectedVehicle: Dispatch<SetStateAction<vehicle | undefined>>
   setCoordsToCenterPointInMap: Dispatch<SetStateAction<coordsToCenterMap>>
   showAllVehiclesInMap: ()=>void
+  refsCardVehicle: React.MutableRefObject<any[]>
+  openCardKey: number | undefined
+  setOpenCardKey: Dispatch<SetStateAction<number | undefined>>
+  refsPathVehicle: React.MutableRefObject<any[]>
 }
 
-export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,selectedVehicle,setSelectedVehicle,setCoordsToCenterPointInMap,showAllVehiclesInMap}:FloatingCardProps) {
-  const [open,setOpen] = useState(true)
-  const [titleFilter, setTitleFilter] = useState('Em trânsito')
-
+export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,selectedVehicle,setSelectedVehicle,setCoordsToCenterPointInMap,showAllVehiclesInMap,refsCardVehicle,openCardKey,setOpenCardKey,refsPathVehicle}:FloatingCardProps) {
+  const  [open,setOpen] = useState(true)
+  const  [titleFilter, setTitleFilter] = useState('Em trânsito')
   const  [vehiclesInTransit,setVehiclesInTransit] = useState<vehicle[]>([])
   const  [vehiclesStopped,setVehiclesStopped] = useState<vehicle[]>([])
   const  [vehiclesOff,setVehiclesOff] = useState<vehicle[]>([])
-  const  [shearchVehicle,setShearchVehicle] = useState<vehicle[]>([...allUserVehicle])
+  const  [shearchVehicle,setShearchVehicle] = useState<vehicle[]>([...sortByPlaca(allUserVehicle)])
   const  [inputSearchValue,setInputSearchValue] = useState<string|undefined>(undefined)
   const  [pageCard,setPageCard] = useState('pagAllVehicles')
   const  [dadosEnd, setDadosEnd] = useState('')
@@ -113,12 +122,23 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
 
     setDadosEnd(response.results[0].formatted_address)
   }
+
+  function sortByPlaca(allUserVehicle: vehicle[]){
+    return allUserVehicle.sort((a,b)=>{if (a.placa > b.placa) {
+      return 1;
+    }
+    if (a.placa < b.placa) {
+      return -1;
+    }
+    return 0;})
+  }
+
   function filterVehicles(){
     if(inputSearchValue==='' ||inputSearchValue === undefined){
-      setShearchVehicle([...allUserVehicle])
+      setShearchVehicle([...sortByPlaca(allUserVehicle)])
       return
     }
-    const filter = allUserVehicle.filter((vehicle) => 
+    const filter = sortByPlaca(allUserVehicle).filter((vehicle) => 
     {if(vehicle.placa?.toUpperCase()
       .includes(inputSearchValue?.toUpperCase()) ){
         return vehicle
@@ -127,8 +147,11 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
     })
     setShearchVehicle(filter)
   }
+
   useEffect(() => {
-    setShearchVehicle([...allUserVehicle])
+    refsCardVehicle.current.length = 0
+    
+    setShearchVehicle([...sortByPlaca(allUserVehicle)])
     if(inputSearchValue != ''){
       filterVehicles()
     }
@@ -153,18 +176,22 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
     setVehiclesInTransit(vehiclesInTransitFilter)
     setVehiclesStopped(vehiclesStoppedFilter)
     setVehiclesOff(vehiclesOffFilter)
-
   },[shearchVehicle])
 
   useEffect(() => {
     filterVehicles()
   },[inputSearchValue])
+  
+  useEffect(() => {
+    setMoreDetails(false)
+  },[pageCard])
  
+
   useEffect(() => {
     if (selectedVehicle) {
       getStreetName(selectedVehicle)
-      setPageCard('pagVehiclesDeatils')
-      setMoreDetails(false)
+      // setPageCard('pagVehiclesDetails')
+      // setMoreDetails(false)
     }
   }, [selectedVehicle])
 
@@ -184,14 +211,15 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
         </button>
       </div>
       {open && (
+
         pageCard === 'pagAllVehicles'?
           (
-            pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTitleFilter,vehiclesInTransit,vehiclesStopped,vehiclesOff,setPageCard,setSelectedVehicle})
+            pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTitleFilter,vehiclesInTransit,vehiclesStopped,vehiclesOff,setPageCard,setSelectedVehicle,refsCardVehicle,shearchVehicle,openCardKey,setOpenCardKey})
             
           ):
-          pageCard === 'pagVehiclesDeatils'?
+          pageCard === 'pagVehiclesDetails'?
           (
-            pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,dadosEnd,setCoordsToCenterPointInMap,moreDetails, setMoreDetails,showAllVehiclesInMap,dateStart,setDateStart,dateEnd,setDateEnd})
+            pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,dadosEnd,setCoordsToCenterPointInMap,moreDetails, setMoreDetails,showAllVehiclesInMap,dateStart,setDateStart,dateEnd,setDateEnd,refsPathVehicle})
           ):''
           
         )
@@ -200,7 +228,8 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
   );
 }
 
-function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTitleFilter,vehiclesInTransit,vehiclesStopped,vehiclesOff,setPageCard,setSelectedVehicle} :pagAllVehiclesProps){
+function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTitleFilter,vehiclesInTransit,vehiclesStopped,vehiclesOff,setPageCard,setSelectedVehicle,refsCardVehicle,shearchVehicle,openCardKey,setOpenCardKey} :pagAllVehiclesProps){
+  
   return(
     <>
           <div className=''>
@@ -210,6 +239,7 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
                   fieldName='Veículos'
                   title="Pesquise o veiculo aqui"
                   onChange={(e)=>{setInputSearchValue(e.target.value)}}
+                  value={inputSearchValue}
                 />
               </div>  
             </div>
@@ -229,53 +259,90 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
             </div> */}
           </div>
           <div className="flex-1 px-3 py-2 overflow-y-scroll">
-              {vehiclesInTransit.length > 0 && 
+            <ul>
+            {shearchVehicle.length > 0 &&
+                shearchVehicle.map((vehicle) => {
+                  return(
+                    <li key={vehicle.carro_id} ref={(elem)=> 
+                     { 
+                       const index = refsCardVehicle?.current.findIndex((e)=>{
+                          if(e?.carro_id === vehicle.carro_id) return e
+                        })
+                        if(index !== -1){
+                          refsCardVehicle.current[index] ={elem:elem,carro_id: vehicle.carro_id}
+                          return
+                        }
+                        refsCardVehicle.current.push({elem:elem,carro_id: vehicle.carro_id})
+                      }
+                    } onClick={()=>{
+                      setSelectedVehicle(vehicle)
+                      if(vehicle.carro_id !== openCardKey){
+                        setOpenCardKey(vehicle.carro_id)
+                        return
+                      }
+                      setOpenCardKey(undefined)
+                }}>
+                      <CardVehicle 
+                          addressName="Nome Completo da rua nº"
+                          addressInfo='Bairro, Cidade - ES'
+                          driverName='Claudio H. A. A.' 
+                          travelTime="1h 13min"
+                          setPageCard={setPageCard}
+                          setSelectedVehicle={setSelectedVehicle}
+                          vehicle={vehicle}
+                          open={vehicle.carro_id === openCardKey}
+                          />
+                    </li>
+                  )
+                })}
+              {/* {vehiclesInTransit.length > 0 &&
                 vehiclesInTransit.map((vehicle) => {
                   return(
-                    <div key={vehicle.carro_id} onClick={()=>{
-                      setPageCard('pagVehiclesDeatils')
-                      setSelectedVehicle(vehicle)
-                      }}>
+                    <li key={vehicle.carro_id} ref={(elem)=> refsCardVehicle.current.push({elem:elem,carro_id: vehicle.carro_id})}>
                       <CardVehicle 
-                          placa={vehicle.placa!} 
-                          addressName="Nome Completo da rua nº, Bairro, Cidade - ES" statusVehicle="Ligado" 
+                          addressName="Nome Completo da rua nº"
+                          addressInfo={'Bairro, Cidade - ES'}
                           driverName='Claudio H. A. A.' 
-                          velocity={Math.floor(Number(vehicle.speed))}  
                           travelTime="1h 13min"
-                          className='cursor-pointer'/>
-                    </div>
+                          className='cursor-pointer'
+                          setPageCard={setPageCard}
+                          vehicle={vehicle}
+                          />
+                    </li>
                   )
                 })}
-              {vehiclesStopped.length > 0 && 
+              {vehiclesStopped.length > 0 &&
                 vehiclesStopped.map(vehicle => {
                   return(
-                    <div key={vehicle.carro_id} onClick={()=>{setPageCard('pagVehiclesDeatils')
-                    setSelectedVehicle(vehicle)}}>
+                    <li key={vehicle.carro_id} ref={(elem)=> refsCardVehicle.current.push({elem:elem,carro_id: vehicle.carro_id})}>
                       <CardVehicle 
-                          placa={vehicle.placa!} 
-                          addressName="Nome Completo da rua nº, Bairro, Cidade - ES" statusVehicle="Parado" 
+                          addressName="Nome Completo da rua nº"
+                          addressInfo={'Bairro, Cidade - ES'}
                           driverName='Claudio H. A. A.' 
-                          velocity={Math.floor(Number(vehicle.speed))}  
                           travelTime="1h 13min"
-                          className='cursor-pointer'/>
-                    </div>
+                          className='cursor-pointer'
+                          setPageCard={setPageCard}
+                          vehicle={vehicle}/>
+                    </li>
                   )
                 })}
-              {vehiclesOff.length > 0 && 
+              {vehiclesOff.length > 0 &&
                 vehiclesOff.map(vehicle => {
                   return(
-                    <div key={vehicle.carro_id} onClick={()=>{setPageCard('pagVehiclesDeatils')
-                    setSelectedVehicle(vehicle)}}>
+                    <li key={vehicle.carro_id} ref={(elem)=> refsCardVehicle.current.push({elem:elem,carro_id: vehicle.carro_id})}>
                       <CardVehicle 
-                          placa={vehicle.placa!} 
-                          addressName="Nome Completo da rua nº, Bairro, Cidade - ES" statusVehicle="Desligado" 
-                          driverName='Claudio H. A. A.' 
-                          velocity={Math.floor(Number(vehicle.speed))}  
+                          addressName="Nome Completo da rua nº"
+                          addressInfo={'Bairro, Cidade - ES'} 
+                          driverName='Claudio H. A. A.'  
                           travelTime="1h 13min"
-                          className='cursor-pointer'/>
-                    </div>
+                          className='cursor-pointer'
+                          setPageCard={setPageCard}
+                          vehicle={vehicle}
+                          />
+                    </li>
                   )
-                })}
+                })} */}
+             </ul>
               {vehiclesOff.length === 0 && vehiclesStopped.length === 0 && vehiclesInTransit.length === 0 &&
                   <div className="w-full flex justify-center mt-4">
                    <common.EmptyContent />
@@ -286,13 +353,13 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
   )
 }
 
-function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,dadosEnd,setCoordsToCenterPointInMap,moreDetails, setMoreDetails,showAllVehiclesInMap,dateStart,setDateStart,dateEnd,setDateEnd} :pagVehiclesDetailsProps){
+function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,dadosEnd,setCoordsToCenterPointInMap,moreDetails, setMoreDetails,showAllVehiclesInMap,dateStart,setDateStart,dateEnd,setDateEnd,refsPathVehicle} :pagVehiclesDetailsProps){
   
   
   const onSubmit = (formData: FormData) => {
     formData.preventDefault();
     try {
-      
+      refsPathVehicle.current = []
       consultVehicleHistoric(
         selectedVehicle.carro_id.toString(),
         formData.target.dateStart.value,
@@ -333,29 +400,40 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
     <>
           <div className=''>
             <div className="px-3 py-2 bg-gray-100 flex justify-between">
+              <div className='flex justify-center'>
               <common.TitleWithSubTitleAtTheTop
                 title={selectedVehicle?.placa!}
                 subtitle="Placa"
+                classSubtitle="text-xs"
+                classTitle="text-xl "
               />
-              <common.TitleWithSubTitleAtTheTop
-                title={`${new Date(selectedVehicle.date_rastreador).toLocaleDateString(
-                  'pt-br',
-                  {
-                    dateStyle: 'short'
-                  }
-                )} 
-                ${new Date(selectedVehicle.date_rastreador).toLocaleTimeString(
-                  'pt-br',
-                  {
-                    timeStyle: 'medium'
-                  }
-                )}`}
-                subtitle="Última atualização"
-              />
+              </div>
+              <div className='flex items-center'>
+                <common.TitleWithSubTitleAtTheTop
+                  title={`${new Date(selectedVehicle.date_rastreador).toLocaleDateString(
+                    'pt-br',
+                    {
+                      dateStyle: 'short'
+                    }
+                  )} 
+                  ${new Date(selectedVehicle.date_rastreador).toLocaleTimeString(
+                    'pt-br',
+                    {
+                      timeStyle: 'medium'
+                    }
+                  )}`}
+                  subtitle="Última atualização"
+                  classTitle="text-sm my-1"
+                  classSubtitle="text-xs flex justify-end"
+
+                />
+              </div>
+             
+              
             </div>
             <div className="flex items-center justify-between px-3 py-1 bg-gray-100">
-              <div className="mb-1 w-full">
-                <div className="grid grid-flow-col w-full gap-2 mb-2 ">
+              <div className="w-full">
+                <div className="grid grid-flow-col w-full gap-2 ">
                 <form
                     onSubmit={(e)=>{
                       onSubmit(e)
@@ -364,12 +442,12 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
                     className="grid grid-cols-12"
                   >
               
-                  <div className="flex col-span-12 my-1 ">
-                    <p className=" flex items-center mr-2">De:</p>
+                  <div className="flex col-span-12 ">
+                    <p className=" flex items-center mr-2 text-sm">De:</p>
                     <input
                       type="datetime-local"
                       name='dateStart'
-                      className="bg-gray-200 col-span-10 dark:bg-gray-700 p-2 rounded-md w-full"
+                      className="bg-gray-200 col-span-10 text-sm dark:bg-gray-700 p-2 rounded-md w-full"
                       value={dateStart}
                       max={dateEnd}
                       onChange={(e)=>setDateStart(e.target.value)}
@@ -377,18 +455,18 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
                   </div>
              
                   <div className="flex col-span-12 my-1">
-                    <p className="flex items-center justify-end pr-1">Até:</p>
+                    <p className="flex items-center justify-end pr-1 text-sm">Até:</p>
                     <input
                       type="datetime-local"
                       name='dateEnd'
-                      className="col-span-10 bg-gray-200 dark:bg-gray-700 p-2 rounded-md w-full"
+                      className="col-span-10 text-sm bg-gray-200 dark:bg-gray-700 p-2 rounded-md w-full"
                       value={dateEnd}
                       max={dateEnd}
                       onChange={(e)=>setDateEnd(e.target.value)}
                     />
                   </div>
                 
-                  <div className='flex justify-between col-span-12 mt-4'>
+                  <div className='flex justify-between col-span-12 my-2'>
                       <button
                         onClick={() => {
                           setPageCard('pagAllVehicles')
@@ -419,13 +497,13 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
           </div>
           <div className="flex-1 px-3 py-2 overflow-y-scroll">
           {!moreDetails ? (
-              <div className="w-full mt-4">
-                <div className="relative mt-5 report-timeline">
+              <div className="w-full mt-2">
+                <div className="relative mt-1 report-timeline">
                   <common.ListCard
                     icon={<LocationMarkerIcon className="w-6 h-6" />}
                     title={'Velocidade'}
                     description={
-                      <p>{Math.floor(Number(selectedVehicle.speed)) + ' Km/H'}</p>
+                      <p>{Number(selectedVehicle.speed).toFixed() + ' Km/H'}</p>
                     }
                   />
                   <common.ListCard
@@ -475,8 +553,21 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
               </div>
               {vehicleConsultData?.length !== 0 ? (
                 <div className="relative mt-5 report-timeline">
+                  <ul>
                   {vehicleConsultData?.map((vehicle, index) => {
                     return (
+                      <li key={index} ref={(elem)=> 
+                        { 
+                          const e_index = refsPathVehicle?.current.findIndex((e)=>{
+                             if(e?.index === index) return e
+                           })
+                           if(e_index !== -1){
+                             refsPathVehicle.current[e_index] ={elem:elem,index}
+                             return
+                           }
+                           refsPathVehicle.current.push({elem:elem,index})
+                         }
+                       }>
                       <common.VehicleCard
                         key={index}
                         vehicle={vehicle}
@@ -488,8 +579,10 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
                         setCoordsToCenterPointInMap={setCoordsToCenterPointInMap}
                         getStreetNameByLatLng={getStreetNameByLatLng}
                       />
+                      </li>
                     )
                   })}
+                  </ul>
                 </div>
               ) : (
                 <div className="w-full flex justify-center mt-4">
@@ -503,3 +596,4 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
 }
 
 export default FloatingCard;
+

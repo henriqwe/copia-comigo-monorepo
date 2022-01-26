@@ -1,9 +1,12 @@
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { MainNavigation, FloatingCard} from "@comigo/ui-shared-components";
 import { Loader } from '@googlemaps/js-api-loader'
 import MainMenuItens from "../components/domains/MainMenuItens";
 import * as localizations from '../components/domains/monitoring/Localization'
 import {getStreetNameByLatLng} from '../components/domains/monitoring/Localization/api'
+import { MarkerClusterer } from "@googlemaps/markerclusterer";
+import React from 'react';
+
 type vehicle = {
   crs: string
   data: string
@@ -30,6 +33,7 @@ type vehicle = {
 }
 
 export default function Index() {
+  
   return (
     <localizations.LocalizationProvider>
       <Page />
@@ -46,8 +50,6 @@ export function Page() {
     vehicleConsultData,
     setVehicleConsultData,
     setSlidePanelState,
-    vehicleOnFocusId,
-    setVehicleOnFocusId,
     localizationSchema,
     consultVehicleHistoric,
     coordsToCenterPointInMap,
@@ -59,7 +61,7 @@ export function Page() {
     google.maps.Marker[]
   >([])
   const [mapa, setMapa] = useState<google.maps.Map>()
-  const  [selectedVehicle,setSelectedVehicle] = useState<vehicle>()
+  const  [selectedVehicle,setSelectedVehicle] = useState<vehicle | undefined>()
   const [pointMarker, setPointMarker] = useState<
     google.maps.Marker | undefined
   >()
@@ -70,7 +72,11 @@ export function Page() {
     line: google.maps.Polyline
   }>()
   const [panorama,setPanorama]=useState<google.maps.StreetViewPanorama>()
-  
+  const [openCardKey,setOpenCardKey] = useState<number>()
+  const [markerCluster, setMarkerCluster] = useState<MarkerClusterer>()
+  const refsCardVehicle = useRef([])
+  const refsPathVehicle = useRef([])
+
   function initMap() {
     const loader = new Loader({
       apiKey: 'AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I',
@@ -107,7 +113,7 @@ export function Page() {
         let pano = map.getStreetView()
         pano.setPov(
           {
-            heading: 265,
+            heading: 90,
             pitch: 0,
           }
         );
@@ -119,77 +125,135 @@ export function Page() {
       })
   }
 
+  function toggleStreetView(lat:number,lng:number){
+    panorama.setPosition({ lat, lng })
+    const toggle = panorama.getVisible();
+  
+    if (toggle == false) {
+      panorama.setVisible(true);
+    } else {
+      panorama.setVisible(false);
+    }
+  }
+
   function showAllVehiclesInMap(){
-    allMarkerVehicles.forEach((vehicle=> vehicle.setMap(mapa)))
+   
+    allMarkerVehicles.forEach((vehicle=> {
+      vehicle.setMap(mapa)
+      vehicle.infowindow.close()
+    }))
+
     if (markersAndLine) {
+      setMarkerCluster(new MarkerClusterer({ map:mapa , markers:allMarkerVehicles }))
+    
       markersAndLine.markers.forEach((marker) => marker.setMap(null))
       markersAndLine.line.getPath().clear()
     }
+  }
+  
+  function handleClick (carro_id:string){
+    setOpenCardKey(Number(carro_id))
+    const index = refsCardVehicle.current.findIndex((elem)=>{
+      if(elem.carro_id === carro_id){
+        return elem
+      }
+    })
+  
+    refsCardVehicle.current[index]['elem']?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+    refsCardVehicle.current[index]['elem']?.firstChild.classList.add('border-2', 'border-yellow-500')
+    setTimeout(() =>{
+       refsCardVehicle.current[index]['elem']?.firstChild.classList.remove('border-2', 'border-yellow-500')
+    },3000)
   }
 
   useEffect(() => {
     initMap()
   }, [])
-
+  
   useEffect(() => {
-    allUserVehicle
-      ?.filter((vehicle) => {
-        if (vehicle.latitude && vehicle.longitude) return vehicle
-      })
-      .forEach((vehicle) => {
-        if (vehicle.carro_id === vehicleOnFocusId && mapa) {
-          // mapa.setCenter({
-          //   lat: Number(vehicle.latitude),
-          //   lng: Number(vehicle.longitude)
-          // })
-        }
-        const marker = allMarkerVehicles.find((elem) => {
-          if (elem.id === vehicle.carro_id) return elem
-        })
-        if (marker) {
-          updateVehicleMarker(
-            marker,
+    if(allUserVehicle && google && mapa){
+      allUserVehicle.forEach((vehicle) => {
+          
+          const marker = allMarkerVehicles.find((elem) => {
+            if (elem.id === vehicle.carro_id) return elem
+          })
+          if (marker) {
+            updateVehicleMarker(
+              marker,
+              vehicle,
+              mapa!,
+              setSelectedVehicle,
+              setSlidePanelState,
+              infoWindowToRemoveLocation,
+              panorama,
+              handleClick,
+              toggleStreetView,
+              setSelectedVehicle
+            )
+            return
+          }
+
+          createNewVehicleMarker(
+            mapa,
             vehicle,
-            mapa!,
+            allMarkerVehiclesStep,
             setSelectedVehicle,
             setSlidePanelState,
-            setVehicleOnFocusId,
             infoWindowToRemoveLocation,
-            panorama
+            panorama,
+            handleClick,
+            toggleStreetView,
+            setSelectedVehicle
           )
-          return
-        }
-
-        createNewVehicleMarker(
-          mapa,
-          vehicle,
-          allMarkerVehiclesStep,
-          setSelectedVehicle,
-          setSlidePanelState,
-          setVehicleOnFocusId,
-          infoWindowToRemoveLocation,
-          panorama
-        )
+        })
+      const markersToAdd = allMarkerVehiclesStep.filter((markerStep) => {
+        const validationMarker = allMarkerVehicles.find((elem) => {
+          if (elem.id === markerStep.id) {
+            return elem
+          }
+        })
+        if (validationMarker) return
+        return markerStep
       })
-    const markersToAdd = allMarkerVehiclesStep.filter((markerStep) => {
-      const validationMarker = allMarkerVehicles.find((elem) => {
-        if (elem.id === markerStep.id) {
-          return elem
-        }
-      })
-      if (validationMarker) return
-      return markerStep
-    })
 
-    setAllMarkerVehicles([...allMarkerVehicles, ...markersToAdd])
+      setAllMarkerVehicles([...allMarkerVehicles, ...markersToAdd])
+      if(!markerCluster){
+        setMarkerCluster(new MarkerClusterer({ map:mapa , markers:allMarkerVehiclesStep }))
+      }
+  }
   }, [allUserVehicle])
 
-  useEffect(() => {
+  useEffect( () => {
     if (selectedVehicle && google){
+      panorama.setVisible(false)
+      allMarkerVehicles.map( (marker) => {
+        if(marker.id === selectedVehicle.carro_id){
+           marker.infowindow?.open({
+            anchor:marker,
+            mapa,
+            shouldFocus: false
+          })
+          const interval = setInterval(() =>{
+            if(document.getElementById(`infoWindowImgStreetView${selectedVehicle.carro_id}`) !== null){  
+              document.getElementById(`infoWindowImgStreetView${selectedVehicle.carro_id}`)?.addEventListener('click',()=>{
+                toggleStreetView(Number(selectedVehicle.latitude),Number(selectedVehicle.longitude))
+              })
+              clearInterval(interval)
+            }
+          },10)
+        }else{
+          marker.infowindow?.close()
+        }
+      })
+      
       centerMapInVehicle({
         lat:Number(selectedVehicle.latitude),
         lng:Number(selectedVehicle.longitude),
-        carro_id:selectedVehicle.carro_id}, mapa)
+        carro_id:selectedVehicle.carro_id}, mapa);
+      // setSelectedVehicle(undefined)
     }
   }, [selectedVehicle])
 
@@ -206,7 +270,10 @@ export function Page() {
   }, [coordsToCenterPointInMap])
 
   useEffect(() => {
+  
     if (vehicleConsultData?.length > 0) {
+      markerCluster.setMap(null)
+      panorama.setVisible(false)
       allMarkerVehicles.forEach((vehicle=> vehicle.setMap(null)))
       createNewVehiclePathMarker(
         infoWindowToRemovePath,
@@ -215,9 +282,12 @@ export function Page() {
         google,
         vehicleConsultData,
         markersAndLine,
-        setMarkersAndLine
+        setMarkersAndLine,
+        refsPathVehicle
       )
+        return
     }
+    
   }, [vehicleConsultData])
 
   return (
@@ -238,7 +308,12 @@ export function Page() {
           showAllVehiclesInMap={showAllVehiclesInMap}
           selectedVehicle={selectedVehicle}
           setSelectedVehicle={setSelectedVehicle}
-          setCoordsToCenterPointInMap={setCoordsToCenterPointInMap}/>
+          setCoordsToCenterPointInMap={setCoordsToCenterPointInMap}
+          refsCardVehicle={refsCardVehicle}
+          refsPathVehicle={refsPathVehicle}
+          openCardKey={openCardKey}
+          setOpenCardKey={setOpenCardKey}
+          />
         </div>
       </div>
       
@@ -254,9 +329,11 @@ function createNewVehicleMarker(
   allMarkerVehiclesStep: google.maps.Marker[] | any[],
   setVehicleConsultData,
   setSlidePanelState,
-  setVehicleOnFocusId: number,
   infoWindowToRemoveLocation: google.maps.Marker[],
-  panorama
+  panorama,
+  handleClick,
+  toggleStreetView,
+  setSelectedVehicle
 ) {
   const marker = new google.maps.Marker({
     map,
@@ -274,21 +351,30 @@ function createNewVehicleMarker(
     }
   })
   
-  marker.infowindow = new google.maps.InfoWindow()
+  marker.infowindow = new google.maps.InfoWindow({
+    disableAutoPan: true,
+  })
 
-  marker.infowindow.setContent(createContentInfoWindow(vehicle,panorama))
-  
+  marker.infowindow.setContent(createContentInfoWindow(vehicle,toggleStreetView,panorama,setSelectedVehicle))
   marker.addListener('click', async () => {
     if (infoWindowToRemoveLocation) {
       infoWindowToRemoveLocation.forEach((marker) => marker.infowindow.close())
     }
-    setVehicleConsultData(vehicle)
-    setSlidePanelState({ open: true })
-    // setVehicleOnFocusId(Number(vehicle.carro_id))
-    marker.infowindow.open({
+    // setVehicleConsultData(vehicle)
+    // setSlidePanelState({ open: true })
+    handleClick(vehicle.carro_id)
+    await marker.infowindow.open({
       anchor:marker,
       map,
       shouldFocus: false
+    })
+    document.getElementById(`infoWindowImgStreetView${vehicle.carro_id}`)?.addEventListener('click',()=>{
+      toggleStreetView(Number(vehicle.latitude),Number(vehicle.longitude))
+    })
+    document.getElementById(`buttonVerTrajeto${vehicle.carro_id}`)?.addEventListener('click',()=>{
+
+      console.log('a')
+
     })
   })
   infoWindowToRemoveLocation.push(marker)
@@ -296,10 +382,20 @@ function createNewVehicleMarker(
 }
 
 function setVehicleColor(vehicle: vehicle) {
-  const dataHora = new Date()
-  dataHora.setHours(dataHora.getHours() - 1)
+  const dataHoraminus1 = new Date()
+  const dataHoraminus6 = new Date()
 
-  if (new Date(vehicle.date_rastreador) < dataHora) return '#ff0000'
+  dataHoraminus1.setHours(dataHoraminus1.getHours() - 1)
+  dataHoraminus6.setHours(dataHoraminus6.getHours() - 1)
+
+  if (new Date(vehicle.date_rastreador) < dataHoraminus6){
+
+    return '#ff0000'
+  } 
+  if (new Date(vehicle.date_rastreador) < dataHoraminus1 && new Date(vehicle.date_rastreador) > dataHoraminus6){
+
+    return '#fffb00'
+  } 
 
   if (vehicle.ligado) {
     if (Number(vehicle.speed).toFixed() === '0') return '#22ade4'
@@ -316,7 +412,7 @@ function centerMapInVehicle(
 ) {
   if (map && coords) {
     map.setCenter(coords)
-    map.setZoom(10)
+    map.setZoom(17)
   }
   
 
@@ -352,9 +448,11 @@ function updateVehicleMarker(
   map: google.maps.Map,
   setVehicleConsultData,
   setSlidePanelState,
-  setVehicleOnFocusId,
   infoWindowToRemoveLocation: google.maps.Marker[],
-  panorama
+  panorama,
+  handleClick,
+  toggleStreetView,
+  setSelectedVehicle
 ) {
   const currentMarkerPos = new google.maps.LatLng(
     Number(vehicle.latitude),
@@ -369,20 +467,25 @@ function updateVehicleMarker(
 
   google.maps.event.clearListeners(marker, 'click')
   
-  marker.infowindow.setContent(createContentInfoWindow(vehicle,panorama))
+  marker.infowindow.setContent(createContentInfoWindow(vehicle,toggleStreetView,panorama,setSelectedVehicle))
   
   marker.addListener('click', async () => {
     if (infoWindowToRemoveLocation) {
       infoWindowToRemoveLocation.forEach((marker) => marker.infowindow.close())
     }
-    setVehicleConsultData(vehicle)
-    setSlidePanelState({ open: true })
-    setVehicleOnFocusId(vehicle.carro_id)
-    marker.infowindow.open({
+    handleClick(vehicle.carro_id)
+
+    // setVehicleConsultData(vehicle)
+    // setSlidePanelState({ open: true })
+    await marker.infowindow.open({
       anchor:marker,
       map,
       shouldFocus: false
     })
+    document.getElementById(`infoWindowImgStreetView${vehicle.carro_id}`)?.addEventListener('click',()=>{
+      toggleStreetView(Number(vehicle.latitude),Number(vehicle.longitude))
+    })
+
   })
   infoWindowToRemoveLocation.push(marker)
 
@@ -443,7 +546,8 @@ function createNewVehiclePathMarker(
         }
       | undefined
     >
-  >
+  >,
+  refsPathVehicle: React.MutableRefObject<any[]>
 ) {
   if (markersAndLine) {
     markersAndLine.markers.forEach((marker) => marker.setMap(null))
@@ -451,11 +555,7 @@ function createNewVehiclePathMarker(
     markersAndLine.line.getPath().clear()
   }
 
-  map.setCenter({
-    lat: Number(pathCoords[pathCoords.length - 1].latitude),
-    lng: Number(pathCoords[pathCoords.length - 1].longitude)
-  })
-  map.setZoom(10)
+  let bounds = new google.maps.LatLngBounds();
   const markers = []
   const marker = new google.maps.Marker({
     map,
@@ -479,6 +579,7 @@ function createNewVehiclePathMarker(
       infoWindowToRemovePath.forEach((info) => info.close())
       infoWindowToRemovePath.length = 0
     }
+    handleClickPath('0')
     const addres = await getVehicleAddress(
       pathCoords[pathCoords.length - 1].latitude,
       pathCoords[pathCoords.length - 1].longitude
@@ -616,7 +717,8 @@ function createNewVehiclePathMarker(
         stop,
         durationMs,
         selectedVehicle,
-        infoWindowToRemovePath
+        infoWindowToRemovePath,
+        index
       )
 
       const arrival = new google.maps.LatLng(
@@ -634,7 +736,8 @@ function createNewVehiclePathMarker(
     stop: boolean,
     downTime: number,
     selectedVehicle: vehicle,
-    infoWindowToRemovePath: google.maps.InfoWindow[]
+    infoWindowToRemovePath: google.maps.InfoWindow[],
+    index: number
   ) {
     let events = ''
 
@@ -676,6 +779,7 @@ function createNewVehiclePathMarker(
         rotation: Number(vehicle.crs) - 180
       }
     })
+    bounds.extend(markerlocal.position);
     markerlocal.addListener('click', async () => {
       if (infoWindowToRemovePath) {
         infoWindowToRemovePath.forEach((info) => info.close())
@@ -685,6 +789,7 @@ function createNewVehiclePathMarker(
         vehicle.latitude,
         vehicle.longitude
       )
+      handleClickPath(String(index))
       const infowindow = new google.maps.InfoWindow({
         content: `<div class='text-dark-7 w-80 m-0'>
         <img
@@ -711,9 +816,9 @@ function createNewVehiclePathMarker(
             : ' Desligado'
         }</span>
         </div>
-        <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold border-2 !border-white rounded-r-md py-2'>${Math.floor(
-          Number(vehicle.speed)
-        )} km/h</div> 
+        <div class='grid-span-1 flex bg-theme-22  justify-center font-semibold border-2 !border-white rounded-r-md py-2'>${
+          Math.floor(Number(vehicle.speed))
+        } km/h</div> 
         </div>
         
         <div class="my-2">
@@ -747,15 +852,29 @@ function createNewVehiclePathMarker(
     // }
   }
 
+  function handleClickPath (index:string){
+    
+    refsPathVehicle.current[index]['elem']?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+
+    refsPathVehicle.current[index]['elem'].firstChild.children[1].classList.add('border-2', 'border-yellow-500')
+   
+    setTimeout(() =>{
+      refsPathVehicle.current[index]['elem'].firstChild.children[1].classList.remove('border-2', 'border-yellow-500')
+    },3000)
+  }
+  map.fitBounds(bounds);
   markers.push(marker)
   markers.push(markerStart)
   setMarkersAndLine({ markers, line })
 }
 
-function createContentInfoWindow(vehicle:vehicle,panorama){
+function createContentInfoWindow(vehicle:vehicle){
   
   const content =`<div class='text-dark-7 w-80 m-0'>
-  <img
+  <img id='infoWindowImgStreetView${vehicle.carro_id}' class='cursor-pointer'
     src="https://maps.googleapis.com/maps/api/streetview?size=320x100&location=${vehicle.latitude},${vehicle.longitude}&fov=80&heading=70&pitch=0&key=AIzaSyA13XBWKpv6lktbNrPjhGD_2W7euKEZY1I" >
   </img>
   <div class='grid grid-cols-3'>
@@ -796,18 +915,14 @@ function createContentInfoWindow(vehicle:vehicle,panorama){
   <p><b>${vehicle.veiculo}</b> </p>
   <p><b>${'NOME DO MOTORISTA'}</b> </p>
   </div>
-  </div>`
+    <div class='flex justify-end'>
+      <button id='buttonVerTrajeto${vehicle.carro_id}'
+      class='justify-center items-center flex bg-gray-700 rounded-sm text-gray-100 px-2 py-1 hover:bg-gray-600'> ver trajeto </button>
+    </div>
+  </div>
   
+  ` 
   return content
 }
 
-function toggleStreetView(lat:number,lng:number,panorama): void {
-  panorama.setPosition({ lat, lng })
-  const toggle = panorama.getVisible();
 
-  if (toggle == false) {
-    panorama.setVisible(true);
-  } else {
-    panorama.setVisible(false);
-  }
-}

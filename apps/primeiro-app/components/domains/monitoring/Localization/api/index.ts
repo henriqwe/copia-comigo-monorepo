@@ -1,29 +1,5 @@
 import axios from 'axios'
 // import { showError } from 'utils/showError'
-type vehicle = {
-  crs: string
-  data: string
-  dist: string
-  latitude: string
-  ligado: number
-  longitude: string
-  speed: string
-  carro_id?: number
-  placa?: string
-  chassis?: string
-  renavan?: string
-  ano_modelo?: string
-  cor?: string
-  veiculo?: string
-  carro_fabricante?: string
-  carro_categoria?: string
-  carro_tipo?: string
-  combustivel?: string
-  ano?: string
-  frota?: string
-  imei?: string
-  date_rastreador?: string
-}
 
 export async function getVehicleLocationRealTime(carro_id: string) {
   try {
@@ -35,14 +11,13 @@ export async function getVehicleLocationRealTime(carro_id: string) {
     )
     return data
   } catch (err: any) {
-    // showError(err)
-    console.log(err)
+    showError(err)
   }
 }
 
-export async function getAllUserVehicles(email: string):Promise<vehicle[]> {
+export async function getAllUserVehicles(email: string) {
   try {
-    const { data }:{data:vehicle[]} = await axios.post(
+    const { data } = await axios.post(
       'https://integration.chaser.com.br/mobile/api/veiculo/usuario',
       {
         email

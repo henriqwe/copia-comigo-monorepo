@@ -1,3 +1,4 @@
+import { common } from '@comigo/ui-shared-components'
 import { Dispatch, ReactNode, SetStateAction, useState } from 'react'
 
 type coordsToCenterMap = {
@@ -33,7 +34,7 @@ type VehicleCardProps = {
   description?: ReactNode
   vehicle: vehicle
   setCoordsToCenterPointInMap:Dispatch<SetStateAction<coordsToCenterMap>>
-  getStreetNameByLatLn: any
+  getStreetNameByLatLng: any
 }
 
 export default function VehicleCard({
@@ -70,14 +71,14 @@ export default function VehicleCard({
         <div
           className={` flex justify-center items-center w-10 h-10 overflow-hidden rounded-full image-fit border-4 bg-white text-dark-7 font-black ${borderColor}`}
         >
-          {Number(vehicle.speed).toFixed()}
+          {Math.floor(Number(vehicle.speed))}
         </div>
         <div className="w-full flex justify-center">
           <span>Km/h</span>
         </div>
       </div>
       <div
-        className="flex-1 px-5 py-3 ml-4 box bg-gray-300 dark:bg-dark-2 zoom-in rounded-sm hover:cursor-pointer dark:hover:bg-dark-4 hover:bg-gray-400"
+        className="flex-1 px-2 py-3 ml-4 box bg-gray-300 dark:bg-dark-2 zoom-in rounded-sm hover:cursor-pointer dark:hover:bg-dark-4 hover:bg-gray-400"
         onClick={() =>
           {
             setCoordsToCenterPointInMap({
@@ -87,28 +88,42 @@ export default function VehicleCard({
           }
         }
       >
-        <div className="flex items-center">
-          <div className="font-medium">{title}</div>
-          <div className="ml-auto text-xs text-gray-500">
-            {new Date(vehicle.data).toLocaleDateString('pt-br', {
-              dateStyle: 'short'
-            })}{' '}
-            {new Date(vehicle.data).toLocaleTimeString('pt-br', {
-              timeStyle: 'medium'
-            })}
+        <div className="grid grid-cols-3">
+          <div className='col-span-1'>
+          <common.TitleWithSubTitleAtTheTop
+                title={title}
+                classTitle='text-sm mt-1'
+                classSubtitle='text-xs'
+                subtitle="Status"
+              />
           </div>
+          <div className='col-span-2 flex justify-end'>
+          <common.TitleWithSubTitleAtTheTop
+                title={`${new Date(vehicle.data).toLocaleDateString('pt-br', {
+                  dateStyle: 'short'
+                })} 
+                ${new Date(vehicle.data).toLocaleTimeString('pt-br', {
+                  timeStyle: 'medium'
+                })}`}
+                classSubtitle='text-xs flex justify-end'
+                classTitle='text-sm mt-1'
+                subtitle="Data e hora"
+                hideColon
+              />
+          </div>
+          
         </div>
         <div className="mt-1 text-gray-600">
           {addressData ? (
-            <span>{addressData}</span>
+            <span className='text-sm'>{addressData}</span>
           ) : (
             <button
-              className="underline text-sm"
+              className="underline"
               onClick={() => {
                 getStreetName(vehicle)
               }}
             >
-              <span className='justify-end'>Clique aqui para consultar o endereço</span>
+              <span className='justify-end text-xs'>Clique aqui para consultar o endereço</span>
             </button>
           )}
         </div>

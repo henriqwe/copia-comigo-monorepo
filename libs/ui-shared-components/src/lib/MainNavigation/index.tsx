@@ -26,7 +26,7 @@ export interface MainNavigationProps {
 }
 
 export function MainNavigation({ mainMenuItens }: MainNavigationProps) {
-  const [openMenu,setOpenMenu] = useState(true)
+  const [openMenu,setOpenMenu] = useState(false)
   return (
       <aside className={`flex flex-col side-nav ${openMenu ?'w-64' :'w-20'} h-full bg-gray-900`}>
       {/* Logo */}

@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   createContext,
   Dispatch,
@@ -41,14 +42,13 @@ type coordsToCenterMap = {
   carro_id?: number
 }
 type LocalizationContextProps = {
-  setVehicleConsultData?: Dispatch<SetStateAction<vehicle | undefined>>
-  vehicleConsultData?: vehicle
+  setVehicleConsultData?: Dispatch<SetStateAction<vehicle[] | undefined>>
+  vehicleConsultData?: vehicle[]
   allUserVehicle?: vehicle[]
   coordsToCenterMap?: coordsToCenterMap
   vehicleLocationInfo?: vehicle
   slidePanelState: SlidePanelStateType
   setSlidePanelState: Dispatch<SetStateAction<SlidePanelStateType>>
-  collaboratorsRefetch: () => void
   localizationsLoading: boolean
   localizationsRefetch: () => void
   createLocalizationLoading: boolean
@@ -56,8 +56,6 @@ type LocalizationContextProps = {
   updateLocalizationLoading: boolean
   localizationSchema: any
   centerVehicleInMap?: (carroId: number) => void
-  vehicleOnFocusId: number | undefined
-  setVehicleOnFocusId: Dispatch<SetStateAction<number | undefined>>
   consultVehicleHistoric?: (
     carro_id: string,
     inicio: string,
@@ -65,6 +63,8 @@ type LocalizationContextProps = {
   ) => void
   coordsToCenterPointInMap: coordsToCenterMap
   setCoordsToCenterPointInMap: Dispatch<SetStateAction<coordsToCenterMap>>
+  refs: {}
+  setRefs:React.Dispatch<React.SetStateAction<{}>>
 }
 
 type ProviderProps = {
@@ -87,19 +87,19 @@ export const LocalizationProvider = ({ children }: ProviderProps) => {
     open: false
   })
   const [vehicleLocationInfo, setVehicleLocationInfo] = useState()
-  const [vehicleConsultData, setVehicleConsultData] = useState<vehicle>()
+  const [vehicleConsultData, setVehicleConsultData] = useState<vehicle[]>()
   const [allUserVehicle, setAllUserVehicle] = useState<vehicle[]>([])
   const [coordsToCenterMap, setCoordsToCenterMap] = useState<coordsToCenterMap>(
     {}
   )
   const [localizationsLoading, setLocalizationsLoading] = useState(false)
-  const [vehicleOnFocusId, setVehicleOnFocusId] = useState<number>()
   const localizationSchema = yup.object().shape({
     carro_id: yup.string()
   })
   const [coordsToCenterPointInMap, setCoordsToCenterPointInMap] =
     useState<coordsToCenterMap>({})
-
+  const [refs,setRefs] = useState({})
+ 
   function centerVehicleInMap(carroId: number) {
     const vehicle = allUserVehicle?.filter((elem: vehicle) => {
       if (elem.carro_id === carroId) return elem
@@ -118,12 +118,13 @@ export const LocalizationProvider = ({ children }: ProviderProps) => {
   }
   async function updateAllUserVehiclesLocations() {
     setLocalizationsLoading(true)
-    const responseGetUserVehicles = await getAllUserVehicles(
+    const response = await getAllUserVehicles(
       'operacional@radarescolta.com'
     )
-    if (responseGetUserVehicles) {
-      setAllUserVehicle(responseGetUserVehicles)
-    }
+    const responseGetUserVehicles = response?.filter((vehicle) => {
+      if (vehicle.latitude && vehicle.longitude) return vehicle
+    })
+    if (responseGetUserVehicles) setAllUserVehicle(responseGetUserVehicles)
     setLocalizationsLoading(false)
   }
 
@@ -145,6 +146,17 @@ export const LocalizationProvider = ({ children }: ProviderProps) => {
     }, 30000)
   }, [])
 
+  // useEffect(() => {
+  //     const refsList = allUserVehicle.reduce((acc, value) => {
+  //       acc[String(value.carro_id)] = React.createRef();
+  //       return acc;
+  //     }, {});
+  //     console.log('refsList');
+  //     console.log(refsList);
+
+  //     setRefs(refsList)
+  // },[allUserVehicle])
+
   return (
     <LocalizationContext.Provider
       value={{
@@ -161,11 +173,11 @@ export const LocalizationProvider = ({ children }: ProviderProps) => {
         localizationsLoading,
         vehicleConsultData,
         setVehicleConsultData,
-        vehicleOnFocusId,
-        setVehicleOnFocusId,
         consultVehicleHistoric,
         coordsToCenterPointInMap,
         setCoordsToCenterPointInMap,
+        refs, 
+        setRefs
       }}
     >
       {children}
