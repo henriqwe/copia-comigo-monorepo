@@ -80,9 +80,11 @@ export interface FloatingCardProps {
   openCardKey: number | undefined
   setOpenCardKey: Dispatch<SetStateAction<number | undefined>>
   refsPathVehicle: React.MutableRefObject<any[]>
+  pageCard: string
+  setPageCard: Dispatch<SetStateAction<string>>
 }
 
-export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,selectedVehicle,setSelectedVehicle,setCoordsToCenterPointInMap,showAllVehiclesInMap,refsCardVehicle,openCardKey,setOpenCardKey,refsPathVehicle}:FloatingCardProps) {
+export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,vehicleConsultData,getStreetNameByLatLng,selectedVehicle,setSelectedVehicle,setCoordsToCenterPointInMap,showAllVehiclesInMap,refsCardVehicle,openCardKey,setOpenCardKey,refsPathVehicle,pageCard,setPageCard}:FloatingCardProps) {
   const  [open,setOpen] = useState(true)
   const  [titleFilter, setTitleFilter] = useState('Em trânsito')
   const  [vehiclesInTransit,setVehiclesInTransit] = useState<vehicle[]>([])
@@ -90,7 +92,6 @@ export function FloatingCard({allUserVehicle,schemaYup,consultVehicleHistoric,ve
   const  [vehiclesOff,setVehiclesOff] = useState<vehicle[]>([])
   const  [shearchVehicle,setShearchVehicle] = useState<vehicle[]>([...sortByPlaca(allUserVehicle)])
   const  [inputSearchValue,setInputSearchValue] = useState<string|undefined>(undefined)
-  const  [pageCard,setPageCard] = useState('pagAllVehicles')
   const  [dadosEnd, setDadosEnd] = useState('')
   const  [moreDetails, setMoreDetails] = useState(false)
   const  [dateStart,setDateStart]= useState(currentDateAndTime('onlyDate'))
@@ -265,11 +266,11 @@ function pagAllVehicles({inputSearchValue,setInputSearchValue,titleFilter,setTit
                   return(
                     <li key={vehicle.carro_id} ref={(elem)=> 
                      { 
-                       const index = refsCardVehicle?.current.findIndex((e)=>{
-                          if(e?.carro_id === vehicle.carro_id) return e
+                       const ref_index = refsCardVehicle?.current.findIndex((ref)=>{
+                          if(ref?.carro_id === vehicle.carro_id) return ref
                         })
-                        if(index !== -1){
-                          refsCardVehicle.current[index] ={elem:elem,carro_id: vehicle.carro_id}
+                        if(ref_index !== -1){
+                          refsCardVehicle.current[ref_index] ={elem:elem,carro_id: vehicle.carro_id}
                           return
                         }
                         refsCardVehicle.current.push({elem:elem,carro_id: vehicle.carro_id})
@@ -558,11 +559,11 @@ function pagVehiclesDetails({setInputSearchValue,setPageCard,selectedVehicle,con
                     return (
                       <li key={index} ref={(elem)=> 
                         { 
-                          const e_index = refsPathVehicle?.current.findIndex((e)=>{
-                             if(e?.index === index) return e
+                          const ref_index = refsPathVehicle?.current.findIndex((ref)=>{
+                             if(ref?.index === index) return ref
                            })
-                           if(e_index !== -1){
-                             refsPathVehicle.current[e_index] ={elem:elem,index}
+                           if(ref_index !== -1){
+                             refsPathVehicle.current[ref_index] ={elem:elem,index}
                              return
                            }
                            refsPathVehicle.current.push({elem:elem,index})
